@@ -6,6 +6,7 @@ require('dotenv').config();
 const { logger } = require('./src/middlewares/logger');
 //routers import
 const clubRouters = require('./src/routes/clubRouter');
+const clubTypeRouters = require('./src/routes/clubTypeRouter');
 const personRouters = require('./src/routes/personRouter');
 
 
@@ -19,6 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(logger);
 //routers use
 app.use('/api/club', clubRouters);
+app.use('/api/club/type', clubTypeRouters);
 app.use('/api/person', personRouters);
 
 app.get('*', (req, res) => {
