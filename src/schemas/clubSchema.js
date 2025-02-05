@@ -12,4 +12,20 @@ const createClubSchema = Joi.object({
     chairman: Joi.number().min(1).required()
 });
 
-module.exports = {createClubSchema}
+const sortClubSchema = Joi.object({
+    sortBy: Joi.string().valid( 'id', 'name', 'city', 'ico', 'tel', 'chairman')
+});
+
+const editClubSchema = Joi.object({
+    name: Joi.string(),
+    type: Joi.number().min(1),
+    city: Joi.string(),
+    street: Joi.string(),
+    postal: Joi.string(),
+    ico: Joi.string(),
+    mail: Joi.string(),
+    tel: Joi.string(),
+    chairman: Joi.number().min(1)
+});
+
+module.exports = {createClubSchema, sortClubSchema, editClubSchema}
