@@ -3,7 +3,7 @@ const clubTypeSchema = require('../schemas/clubTypeSchema');
 
 const getClubType = async (req, res) => {
     try {
-        const result = await clubTypeModel.getClubTypeDB();
+        const result = await clubTypeModel.selectClubTypes();
         if(result.rows.length < 1)
             return res.status(500).send({ message: "V databáze sa nenachádzajú žiadne typy klubov"});
 
@@ -26,7 +26,7 @@ const createClubType = async (req, res) => {
 
     const { club_type } = req.body;
     try {
-        const result = await clubTypeModel.createClubTypeDB(club_type);
+        const result = await clubTypeModel.intertClubType(club_type);
         if(result.rows.length < 1)
             return res.status(500).send({ message: "Nebolo mozno zapisat typ klubu do databázy"});
 
@@ -37,8 +37,19 @@ const createClubType = async (req, res) => {
     }
 };
 
-const deleteClubType = async(req, res) => {
 
+const deleteClubType = async(req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await clubTypeModel.deleteClubTypeDB(id);
+        if(result.rows.length < 1)
+            return res.status(500).send({ message: "Nebolo mozno vymazat typ klubu z databázy"});
+
+        return res.status(201).send({message: "Typ klubu bol úspešne odstránený z databázy"});
+    } catch (e) {
+        console.log(`🟠 We got a problem: ${e}`);
+        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+    }
 };
 
 module.exports = { getClubType, createClubType, deleteClubType}

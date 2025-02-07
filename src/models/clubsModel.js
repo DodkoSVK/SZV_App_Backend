@@ -4,11 +4,13 @@ const { pool } = require('../../config/database');
  * Database function for get clubs from DB with optional parameter for sorting
  * @param {*} sortBy -> id, name, city, ico (Identifikacne Cislo Organizacie), tel, chairman
  */
-const getAllClubsDB = async (sortBy) => {   
+const selectAllClubs = async (sortBy) => {   
    let query = 'SELECT * FROM public.club';
     try {
         if(sortBy)
             query += ` ORDER BY ${sortBy};`;
+        else
+            query += ';';
 
         const result = await pool.query(query);
         return result;
@@ -21,7 +23,7 @@ const getAllClubsDB = async (sortBy) => {
  * @param {*} id -> Club ID
  * @returns 
  */
-const getClubByIDDB = async (id) => {
+const selectClubById = async (id) => {
     try {
         const result = await pool.query('SELECT * FROM public.club WHERE public.club.id = $1', [id]);
         return result;
@@ -42,7 +44,7 @@ const getClubByIDDB = async (id) => {
  * @param {*} chairman -> Int
  * @return {*} 
  */
-const createClubInDb = async (name, type, city, street, postal, ico, mail, tel, chairman) => {
+const insertClub = async (name, type, city, street, postal, ico, mail, tel, chairman) => {
     try {
         const results = await pool.query('INSERT INTO public.club (name, type, city, street, postal, ico, mail, tel, chairman) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;', [name, type, city, street, postal, ico, mail, tel, chairman]);
         return results;
@@ -57,7 +59,7 @@ const createClubInDb = async (name, type, city, street, postal, ico, mail, tel, 
  * @param {*} valuesToUpdate -> Values corresponsing to columns
  * @returns 
  */
-const editClubDB = async (fieldsToUpdate, valuesToUpdate) => {
+const updateClub = async (fieldsToUpdate, valuesToUpdate) => {
     try {
         const results = await pool.query(`UPDATE public.club SET ${fieldsToUpdate.join(', ')} WHERE id = $${fieldsToUpdate.length+1} RETURNING id;`, valuesToUpdate);
         return results;
@@ -80,4 +82,4 @@ const deleteClubDB = async (id) => {
     }
 };
 
-module.exports = {getAllClubsDB, getClubByIDDB, createClubInDb, editClubDB, deleteClubDB};
+module.exports = {selectAllClubs, selectClubById, insertClub, updateClub, deleteClubDB};

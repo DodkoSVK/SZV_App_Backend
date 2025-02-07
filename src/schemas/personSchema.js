@@ -1,0 +1,18 @@
+const Joi = require("joi");
+
+const createPersonSchema = Joi.object({
+    name: Joi.string().required(),
+    surname: Joi.string().required(),
+    birth: Joi.date().required(),
+    club: Joi.number().min(1).required()
+});
+
+const sortPersonSchema = Joi.object({
+    sortBy: Joi.string().valid( 'id', 'name', 'surname', 'birth', 'club')
+});
+
+const sortPersonIdSchema = Joi.object({
+    id: Joi.number().min(1).required()
+});
+
+module.exports = { sortPersonSchema, createPersonSchema, sortPersonIdSchema };

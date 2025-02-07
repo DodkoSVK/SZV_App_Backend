@@ -19,8 +19,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //Custom middlewares
 app.use(logger);
 //routers use
-app.use('/api/club', clubRouters);
 app.use('/api/club/type', clubTypeRouters);
+app.use('/api/club', clubRouters);
 app.use('/api/person', personRouters);
 
 app.get('*', (req, res) => {
