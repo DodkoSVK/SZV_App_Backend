@@ -29,8 +29,17 @@ const insertPerson = async (name, surname, birth, club) => {
         throw e;
     }
 };
-const updatePerson = () => {
-
+const updatePerson = async (id, fieldsToUpdate) => {
+    try {
+        const setClause = Object.keys(fieldsToUpdate)
+            .map((key, index) => `${key} = $${index + 1}`)
+            .join(', ');
+        const values = Object.values(fieldsToUpdate);
+        values.push(id);   
+        return await pool.query(`UPDATE person SET ${setClause} WHERE id = $${values.length} RETURNING id;`, values);
+    } catch (e) {
+        throw e;        
+    }
 };
 const deletePerson = () => {
 

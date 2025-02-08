@@ -60,7 +60,6 @@ const createClub = async (req, res) => {
         return res.status(400).send({ message: error.details[0].message});
 
     const { name, type, city, street, postal, ico, mail, tel, chairman } = req.body;
-
     try {
         const result = await clubModel.insertClub(name, type, city, street, postal, ico, mail, tel, chairman);
         if (result.rows.length < 1)
@@ -70,10 +69,8 @@ const createClub = async (req, res) => {
     } catch (e) {
         console.log(`🟠 We got a problem: ${e}`);
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
-    }
-    
+    }    
 };
-
 /**
  * Backend controller for editing an existing club by id
  * @param {*} req
@@ -81,7 +78,7 @@ const createClub = async (req, res) => {
  * @return {*} -> Code 201: Club updated, Code 400: Wrong request, Code 500: Database error
  */
 const editClub = async (req, res) => {
-    const { error } = clubSchema.editClubSchema.validate(req.body)
+    const { error } = clubSchema.editClubSchema.validate(req.body);
     if (error)
         return res.status(400).send({ message: error.details[0].message});
 
@@ -89,7 +86,6 @@ const editClub = async (req, res) => {
     const { name, type, city, street, postal, ico, mail, tel, chairman } = req.body;
     let fieldsToUpdate = [];
     let valuesToUpdate = [];
-
     if(name) {
         fieldsToUpdate.push(`name = $${fieldsToUpdate.length+1}`);
         valuesToUpdate.push(name);
@@ -157,4 +153,5 @@ const deleteClub = async (req, res) => {
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
     }
 };
+
 module.exports = {getClub, getClubById, createClub, editClub, deleteClub};

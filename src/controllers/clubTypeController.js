@@ -1,6 +1,12 @@
 const clubTypeModel = require('../models/clubTypeModel');
 const clubTypeSchema = require('../schemas/clubTypeSchema');
 
+/**
+ * Backend controller for getting club types from the DB
+ * @param {*} req 
+ * @param {*} res 
+ * @returns -> Code 200: All data retrieved or the empty DB, Code 500: Database error
+ */
 const getClubType = async (req, res) => {
     try {
         const result = await clubTypeModel.selectClubTypes();
@@ -14,10 +20,10 @@ const getClubType = async (req, res) => {
     }
 };
 /**
- * Backend controller to create a new club type
+ * Backend controller for creating a new club type
  * @param {*} req 
  * @param {*} res 
- * @returns 
+ * @returns -> Code 200: Club type created, Code 400: Wrong request, Code 500: Database error
  */
 const createClubType = async (req, res) => {
     const { error } = clubTypeSchema.clubTypeSchema.validate(req.body);
@@ -36,8 +42,12 @@ const createClubType = async (req, res) => {
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
     }
 };
-
-
+/**
+ * Backend controller for deleting a club type
+ * @param {*} req 
+ * @param {*} res 
+ * @returns -> Code 201: Club type deleted, Code 500: Database error
+ */
 const deleteClubType = async(req, res) => {
     const { id } = req.params;
     try {

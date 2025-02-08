@@ -14,5 +14,11 @@ const sortPersonSchema = Joi.object({
 const sortPersonIdSchema = Joi.object({
     id: Joi.number().min(1).required()
 });
+const updatePersonSchema = Joi.object({
+    name: Joi.string(),
+    surname: Joi.string(),
+    birth: Joi.date(),
+    club: Joi.number().min(1)
+});
 
-module.exports = { sortPersonSchema, createPersonSchema, sortPersonIdSchema };
+module.exports = { sortPersonSchema, createPersonSchema, sortPersonIdSchema, updatePersonSchema };
