@@ -1,7 +1,7 @@
 const { pool } = require('../../config/database');
 
 /**
- * Database function to get all club types
+ * Database function to select all club types
  */
 const selectClubTypes = async () => {
     try {
@@ -14,7 +14,7 @@ const selectClubTypes = async () => {
 };
 
 /**
- * Database function to create a new club type
+ * Database function to insert club type into database
  * @param {*} club_type 
  * @returns 
  */
@@ -28,7 +28,7 @@ const intertClubType = async (club_type) => {
 };
 
 /**
- * Database function to delete clubtype from database
+ * Database function to delete club type from database
  * @param {*} id 
  * @returns 
  */

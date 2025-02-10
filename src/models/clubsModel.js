@@ -59,10 +59,14 @@ const insertClub = async (name, type, city, street, postal, ico, mail, tel, chai
  * @param {*} valuesToUpdate -> Values corresponsing to columns
  * @returns 
  */
-const updateClub = async (fieldsToUpdate, valuesToUpdate) => {
+const updateClub = async (id, fieldsToUpdate) => {
     try {
-        const results = await pool.query(`UPDATE public.club SET ${fieldsToUpdate.join(', ')} WHERE id = $${fieldsToUpdate.length+1} RETURNING id;`, valuesToUpdate);
-        return results;
+        const setClause = Object.keys(fieldsToUpdate)
+            .map((key, index) => `${key} = $${index + 1}`)
+            .join(', ');
+        const values = Object.values(fieldsToUpdate);
+        values.push(id);
+       return await pool.query(`UPDATE public.club SET ${setClause} WHERE id = $${values.length} RETURNING id;`, values);
     } catch (e) {
         throw e;
     }

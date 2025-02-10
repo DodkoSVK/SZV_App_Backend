@@ -71,20 +71,17 @@ const createPerson = async (req, res) => {
     }    
 };
 /**
- * 
+ * Backend controller for editing a person
  * @param {*} req 
  * @param {*} res 
+ * @returns Code 200: Person updated, Code 400: Wrong request, Code 500: Database error
  */
 const editPerson = async (req, res) => {
     const { error } = personSchema.updatePersonSchema.validate(req.body);
-    if(error) {
-        console.log(`Validation error: ${error.details[0].message}`);
-        return res.status(400).send({ message: error.details[0].message});
-    }
-
+    if(error) 
+        return res.status(400).send({ message: error.details[0].message});    
     const { id } = req.params;
     const { name, surname, birth, club } = req.body;
-    console.log(`Editing person with ID: ${id} and data: ${JSON.stringify({ name, surname, birth, club })}`);
 
     let fieldsToUpdate = {};
     if (name) fieldsToUpdate.name = name;
@@ -103,11 +100,26 @@ const editPerson = async (req, res) => {
         return res.status(500).send({ message: "Neočakávaná chyba na strane databázy." });
     }
 };
-
+/**
+ * Backend controller for deleting a person
+ * @param {*} req 
+ * @param {*} res 
+ * @returns -> Code 200: Person deleted, Code 400: Wrong request, Code 500: Database error
+ */
 const deletePerson = async (req, res) => {
-
+    const { error } = personSchema.sortPersonIdSchema.validate(req.params);
+    if(error)
+        return res.status(400).send({ message: error.details[0].message});
+    const { id } = req.params;
+    try {
+        const result = await personModels.deletePerson(id);
+        if(result.rowCount === 0)
+            return res.status(404).send({ message: "Osoba nebola nájdená." });
+        return res.status(200).send({ message: "Osoba bola úspešne vymazaná." });
+    } catch (e) {
+        console.log(`🟠 We got a problem: ${e}`);
+        return res.status(500).send({ message: "Neočakávaná chyba na strane databázy." });
+    }
 };
-
-
 
 module.exports = { getPerson, getPersonByID, createPerson, editPerson, deletePerson };

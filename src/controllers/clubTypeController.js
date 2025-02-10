@@ -33,7 +33,7 @@ const createClubType = async (req, res) => {
     const { club_type } = req.body;
     try {
         const result = await clubTypeModel.intertClubType(club_type);
-        if(result.rows.length < 1)
+        if(result.rowCount === 0)
             return res.status(500).send({ message: "Nebolo mozno zapisat typ klubu do databázy"});
 
         return res.status(201).send({message: `Typ klubu vytvoreny s ID: ${result.rows[0].id}`});

@@ -81,54 +81,24 @@ const editClub = async (req, res) => {
     const { error } = clubSchema.editClubSchema.validate(req.body);
     if (error)
         return res.status(400).send({ message: error.details[0].message});
-
     const { id } = req.params;
     const { name, type, city, street, postal, ico, mail, tel, chairman } = req.body;
     let fieldsToUpdate = [];
-    let valuesToUpdate = [];
-    if(name) {
-        fieldsToUpdate.push(`name = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(name);
-    }
-    if(type) {
-        fieldsToUpdate.push(`type = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(type);
-    }
-    if(city) {
-        fieldsToUpdate.push(`city = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(city);
-    }
-    if(street) {
-        fieldsToUpdate.push(`street = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(street);
-    }
-    if(postal) {
-        fieldsToUpdate.push(`postal = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(postal);
-    }
-    if(ico) {
-        fieldsToUpdate.push(`ico = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(ico);
-    }
-    if(mail) {
-        fieldsToUpdate.push(`mail = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(mail);
-    }
-    if(tel) {
-        fieldsToUpdate.push(`tel = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(tel);
-    }
-    if(chairman) {
-        fieldsToUpdate.push(`chairman = $${fieldsToUpdate.length+1}`);
-        valuesToUpdate.push(chairman);
-    }
-    try {
-        valuesToUpdate.push(id);
-        const result = await clubModel.updateClub(fieldsToUpdate, valuesToUpdate);
-        if(result.rows.length < 1)
+    if (name) fieldsToUpdate.name = name;
+    if (type) fieldsToUpdate.type = type;
+    if (city) fieldsToUpdate.city = city;
+    if (street) fieldsToUpdate.street = street;
+    if (postal) fieldsToUpdate.postal = postal;
+    if (ico) fieldsToUpdate.ico = ico;
+    if (mail) fieldsToUpdate.mail = mail;
+    if (tel) fieldsToUpdate.tel = tel;
+    if (chairman) fieldsToUpdate.chairman = chairman;
+    try {        
+        const result = await clubModel.updateClub(id, fieldsToUpdate);
+        if(result.rowCount === 0)
             return res.status(500).send({message: "Nebolo mozne upravit klub v databáze"});
 
-        return res.status(201).send({message: `Klub s ID: ${results.rows[0].id} bol upravený`});
+        return res.status(201).send({message: `Klub s ID: ${id} bol upravený`});
     } catch (e) {
         console.log(`🟠 We got a problem: ${e}`);
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
@@ -144,7 +114,7 @@ const deleteClub = async (req, res) => {
     const { id } = req.params;
     try {
         const result = await clubModel.deleteClubDB(id);
-        if (result.rows.length < 1)
+        if (result.rowCount === 0)
             return res.status(500).send({message: "Nebolo mozne vymazat klub z databazy"});
 
         return res.status(200).send({message: `Klub s ID: ${results.rows[0].id} bol vymazaný`});
