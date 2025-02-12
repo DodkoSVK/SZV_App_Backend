@@ -1,8 +1,7 @@
 const Joi = require("joi");
 
 const createClubSchema = Joi.object({
-    name: Joi.string().required(),
-    type: Joi.number().min(1).required(),
+    name: Joi.string().required(),    
     city: Joi.string().required(),
     street: Joi.string().required(),
     postal: Joi.string().required(),
@@ -20,8 +19,7 @@ const sortIdSchema = Joi.object({
 })
 
 const editClubSchema = Joi.object({
-    name: Joi.string(),
-    type: Joi.number().min(1),
+    name: Joi.string(),    
     city: Joi.string(),
     street: Joi.string(),
     postal: Joi.string(),

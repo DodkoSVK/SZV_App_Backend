@@ -59,9 +59,9 @@ const createClub = async (req, res) => {
     if(error)
         return res.status(400).send({ message: error.details[0].message});
 
-    const { name, type, city, street, postal, ico, mail, tel, chairman } = req.body;
+    const { name, city, street, postal, ico, mail, tel, chairman } = req.body;
     try {
-        const result = await clubModel.insertClub(name, type, city, street, postal, ico, mail, tel, chairman);
+        const result = await clubModel.insertClub(name, city, street, postal, ico, mail, tel, chairman);
         if (result.rows.length < 1)
             return res.status(500).send({message: "Nebolo mozne zapisat klub do databazy"});
 

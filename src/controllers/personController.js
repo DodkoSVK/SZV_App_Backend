@@ -58,9 +58,9 @@ const createPerson = async (req, res) => {
     if(error)
         return res.status(400).send({ message: error.details[0].message});
 
-    const { name, surname, birth, club } = req.body;
+    const { fName, surname, birth, club } = req.body;
     try {
-        const result = await personModels.insertPerson(name, surname, birth, club)    
+        const result = await personModels.insertPerson(fName, surname, birth, club)    
         if(result.rows.length < 1) 
             return res.status(200).send({ message: "Nebolo možné zapísať osobu do databázy"});
 
@@ -81,10 +81,10 @@ const editPerson = async (req, res) => {
     if(error) 
         return res.status(400).send({ message: error.details[0].message});    
     const { id } = req.params;
-    const { name, surname, birth, club } = req.body;
+    const { fName, surname, birth, club } = req.body;
 
     let fieldsToUpdate = {};
-    if (name) fieldsToUpdate.name = name;
+    if (fName) fieldsToUpdate.f_name = fName;
     if (surname) fieldsToUpdate.surname = surname;
     if (birth) fieldsToUpdate.birth = birth;
     if (club) fieldsToUpdate.club = club;

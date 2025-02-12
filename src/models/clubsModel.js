@@ -5,7 +5,10 @@ const { pool } = require('../../config/database');
  * @param {*} sortBy -> id, name, city, ico (Identifikacne Cislo Organizacie), tel, chairman
  */
 const selectAllClubs = async (sortBy) => {   
-   let query = 'SELECT * FROM public.club';
+   let query = `SELECT club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname 
+                FROM public.club 
+                JOIN public.person 
+                ON public.club.chairman = public.person.id;`;
     try {
         if(sortBy)
             query += ` ORDER BY ${sortBy};`;
@@ -25,7 +28,10 @@ const selectAllClubs = async (sortBy) => {
  */
 const selectClubById = async (id) => {
     try {
-        const result = await pool.query('SELECT * FROM public.club WHERE public.club.id = $1', [id]);
+        const result = await pool.query(`SELECT club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname
+            FROM public.club 
+            JOIN public.person 
+            ON public.club.chairman = public.person.id WHERE club.id =$1`, [id]);
         return result;
     } catch (e) {
         throw e;
@@ -44,9 +50,9 @@ const selectClubById = async (id) => {
  * @param {*} chairman -> Int
  * @return {*} 
  */
-const insertClub = async (name, type, city, street, postal, ico, mail, tel, chairman) => {
+const insertClub = async (name, city, street, postal, ico, mail, tel, chairman) => {
     try {
-        const results = await pool.query('INSERT INTO public.club (name, type, city, street, postal, ico, mail, tel, chairman) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;', [name, type, city, street, postal, ico, mail, tel, chairman]);
+        const results = await pool.query('INSERT INTO public.club (name, city, street, postal, ico, mail, tel, chairman) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;', [name, city, street, postal, ico, mail, tel, chairman]);
         return results;
     } catch (e) {        
         throw e;

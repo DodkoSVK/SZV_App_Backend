@@ -18,9 +18,9 @@ const selectClubTypes = async () => {
  * @param {*} club_type 
  * @returns 
  */
-const intertClubType = async (club_type) => {
+const intertClubType = async (club_type, club_short) => {
     try {
-        const result = await pool.query('INSERT INTO public.club_type (club_type) VALUES ($1) RETURNING id;', [club_type]);
+        const result = await pool.query('INSERT INTO public.club_type (club_type, club_short) VALUES ($1, $2) RETURNING id;', [club_type, club_short]);
         return result;
     } catch (e) {
         throw(e);

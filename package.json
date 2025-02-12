@@ -19,7 +19,7 @@
   },
   "scripts": {
     "dev": "nodemon server.js",
-    "start-backend": "cd ../SZV_APP_Backend && yarn start",
+    "start-backend": "cd ../SZV_APP_Backend && yarn dev",
     "start-frontend": "cd ../SZV_APP_Frontend && yarn dev",
     "both": "concurrently \"yarn start-backend\" \"yarn start-frontend\""
   }

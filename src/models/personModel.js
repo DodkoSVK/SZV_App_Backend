@@ -23,7 +23,7 @@ const selectPersonById = async (id) => {
 };
 const insertPerson = async (name, surname, birth, club) => {
     try {
-        const result = await pool.query('INSERT INTO public.person (name, surname, birth, club) VALUES ($1, $2, $3, $4) RETURNING id;', [name, surname, birth, club]);
+        const result = await pool.query('INSERT INTO public.person (f_name, surname, birth, club) VALUES ($1, $2, $3, $4) RETURNING id;', [name, surname, birth, club]);
         return result;        
     } catch (e) {
         throw e;
