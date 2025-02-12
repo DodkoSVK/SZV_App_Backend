@@ -5,7 +5,7 @@ const { pool } = require('../../config/database');
  * @param {*} sortBy -> id, name, city, ico (Identifikacne Cislo Organizacie), tel, chairman
  */
 const selectAllClubs = async (sortBy) => {   
-   let query = `SELECT club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname 
+   let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname 
                 FROM public.club 
                 JOIN public.person 
                 ON public.club.chairman = public.person.id;`;
@@ -28,7 +28,7 @@ const selectAllClubs = async (sortBy) => {
  */
 const selectClubById = async (id) => {
     try {
-        const result = await pool.query(`SELECT club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname
+        const result = await pool.query(`SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname
             FROM public.club 
             JOIN public.person 
             ON public.club.chairman = public.person.id WHERE club.id =$1`, [id]);
