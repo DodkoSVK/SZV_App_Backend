@@ -8,14 +8,17 @@ const selectAllClubs = async (sortBy) => {
    let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname 
                 FROM public.club 
                 JOIN public.person 
-                ON public.club.chairman = public.person.id;`;
+                ON public.club.chairman = public.person.id`;
+
+    if(sortBy)
+        console.log(`Sort by: ${sortBy}`);
     try {
         if(sortBy)
             query += ` ORDER BY ${sortBy};`;
         else
             query += ';';
-
-        const result = await pool.query(query);
+        
+        const result = await pool.query(query);        
         return result;
     } catch (e) {
         throw e;
