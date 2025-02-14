@@ -65,7 +65,7 @@ const createClub = async (req, res) => {
         if (result.rows.length < 1)
             return res.status(500).send({message: "Nebolo mozne zapisat klub do databazy"});
 
-        return res.status(201).send({message: `Klub vytvoreny s ID: ${result.rows[0].id}`});
+        return res.status(201).send({message: `Klub vytvorený`});
     } catch (e) {
         console.log(`🟠 We got a problem: ${e}`);
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});

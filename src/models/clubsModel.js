@@ -5,9 +5,9 @@ const { pool } = require('../../config/database');
  * @param {*} sortBy -> id, name, city, ico (Identifikacne Cislo Organizacie), tel, chairman
  */
 const selectAllClubs = async (sortBy) => {   
-   let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname 
+   let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, COALESCE(person.f_name, 'Štatutár') AS f_name,  COALESCE(person.surname, 'Nepriradený') AS surname
                 FROM public.club 
-                JOIN public.person 
+                LEFT JOIN public.person 
                 ON public.club.chairman = public.person.id`;
 
     if(sortBy)
