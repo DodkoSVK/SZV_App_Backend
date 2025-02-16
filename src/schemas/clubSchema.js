@@ -19,14 +19,15 @@ const sortIdSchema = Joi.object({
 })
 
 const editClubSchema = Joi.object({
+    id: Joi.number().min(1),
     name: Joi.string(),    
     city: Joi.string(),
     street: Joi.string(),
     postal: Joi.string(),
     ico: Joi.string(),
-    mail: Joi.string(),
-    tel: Joi.string(),
-    chairman: Joi.number().min(1)
+    mail: Joi.string().allow(''),
+    tel: Joi.string().allow(''),
+    chid: Joi.number().min(0)
 });
 
 module.exports = {createClubSchema, sortClubSchema, sortIdSchema, editClubSchema}

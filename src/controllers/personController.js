@@ -26,6 +26,18 @@ const getPerson = async (req, res) => {
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
     }
 };
+const getPersonWithoutClub = async (req, res) => {
+    try {
+        const result = await personModels.selectPersonWithoutClub();
+        if (result.rows.length < 1)
+            return res.status(200).send({ message: "V databáze sa nenachádzajú žiany ľudia bez klubu"});
+        return res.status(200).json(result.rows);
+    } catch (e) {
+        console.log(`🟠 We got a problem: ${e}`);
+        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+    }
+}
+
 /**
  * Backend controller for getting people from the DB by their ID
  * @param {*} req 
@@ -122,4 +134,4 @@ const deletePerson = async (req, res) => {
     }
 };
 
-module.exports = { getPerson, getPersonByID, createPerson, editPerson, deletePerson };
+module.exports = { getPerson, getPersonWithoutClub, getPersonByID, createPerson, editPerson, deletePerson };

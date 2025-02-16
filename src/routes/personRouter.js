@@ -3,6 +3,7 @@ const router = express.Router();
 const personController = require('../controllers/personController');
 
 router.get('/', personController.getPerson);
+router.get('/club', personController.getPersonWithoutClub);
 router.get('/:id', personController.getPersonByID);
 router.post('/', personController.createPerson);
 router.patch('/:id', personController.editPerson);

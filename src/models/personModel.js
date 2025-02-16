@@ -2,7 +2,10 @@ const { pool } = require('../../config/database');
 
 const selectPerson = async (sortBy) => {
    try {
-        let query = 'SELECT * FROM public.person ';
+        let query = `SELECT person.id, person.fname, person.sname, person.birth, club.name AS club
+                    FROM public.person
+                    LEFT JOIN public.club
+                    ON public.person.club = public.club.id`;
         if(sortBy)
             query += ` ORDER BY ${sortBy};`;
         else
@@ -13,6 +16,13 @@ const selectPerson = async (sortBy) => {
         throw e;
    }
 };
+const selectPersonWithoutClub = async () => {
+    try {
+        return await pool.query('SELECT * FROM person WHERE club IS NULL OR club = 0;')
+    } catch (e) {
+        throw e
+    }
+}
 const selectPersonById = async (id) => {
     try {
         const result = await pool.query('SELECT * FROM public.person WHERE id=$1', [id]);
@@ -23,7 +33,7 @@ const selectPersonById = async (id) => {
 };
 const insertPerson = async (name, surname, birth, club) => {
     try {
-        const result = await pool.query('INSERT INTO public.person (f_name, surname, birth, club) VALUES ($1, $2, $3, $4) RETURNING id;', [name, surname, birth, club]);
+        const result = await pool.query('INSERT INTO public.person (fname, sname, birth, club) VALUES ($1, $2, $3, $4) RETURNING id;', [name, surname, birth, club]);
         return result;        
     } catch (e) {
         throw e;
@@ -46,4 +56,4 @@ const deletePerson = () => {
 };
 
 
-module.exports = { selectPerson, selectPersonById, insertPerson, updatePerson, deletePerson};
+module.exports = { selectPerson, selectPersonWithoutClub, selectPersonById, insertPerson, updatePerson, deletePerson};

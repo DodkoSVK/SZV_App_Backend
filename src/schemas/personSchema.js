@@ -4,11 +4,11 @@ const createPersonSchema = Joi.object({
     fName: Joi.string().required(),
     surname: Joi.string().required(),
     birth: Joi.date().required(),
-    club: Joi.number().min(1).required()
+    club: Joi.number().min(1)
 });
 
 const sortPersonSchema = Joi.object({
-    sortBy: Joi.string().valid( 'id', 'fName', 'surname', 'birth', 'club')
+    sortBy: Joi.string().valid('fname', 'sname', 'birth', 'club')
 });
 
 const sortPersonIdSchema = Joi.object({

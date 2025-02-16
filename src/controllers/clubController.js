@@ -82,7 +82,7 @@ const editClub = async (req, res) => {
     if (error)
         return res.status(400).send({ message: error.details[0].message});
     const { id } = req.params;
-    const { name, type, city, street, postal, ico, mail, tel, chairman } = req.body;
+    const { name, type, city, street, postal, ico, mail, tel, chid } = req.body;
     let fieldsToUpdate = [];
     if (name) fieldsToUpdate.name = name;
     if (type) fieldsToUpdate.type = type;
@@ -92,7 +92,7 @@ const editClub = async (req, res) => {
     if (ico) fieldsToUpdate.ico = ico;
     if (mail) fieldsToUpdate.mail = mail;
     if (tel) fieldsToUpdate.tel = tel;
-    if (chairman) fieldsToUpdate.chairman = chairman;
+    if (chid) fieldsToUpdate.chairman = chid;
     try {        
         const result = await clubModel.updateClub(id, fieldsToUpdate);
         if(result.rowCount === 0)
@@ -117,7 +117,7 @@ const deleteClub = async (req, res) => {
         if (result.rowCount === 0)
             return res.status(500).send({message: "Nebolo mozne vymazat klub z databazy"});
 
-        return res.status(200).send({message: `Klub s ID: ${results.rows[0].id} bol vymazaný`});
+        return res.status(200).send({message: `Klub s ID: ${result.rows[0].id} bol vymazaný`});
     } catch (e) {
         console.log(`🟠 We got a problem: ${e}`);
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});

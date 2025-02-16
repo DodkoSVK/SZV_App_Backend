@@ -5,7 +5,7 @@ const { pool } = require('../../config/database');
  * @param {*} sortBy -> id, name, city, ico (Identifikacne Cislo Organizacie), tel, chairman
  */
 const selectAllClubs = async (sortBy) => {   
-   let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, COALESCE(person.f_name, 'Štatutár') AS f_name,  COALESCE(person.surname, 'Nepriradený') AS surname
+   let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, COALESCE(person.fname, 'Štatutár') AS fname,  COALESCE(person.sname, 'Nepriradený') AS sname, COALESCE(person.id, 0) AS chid
                 FROM public.club 
                 LEFT JOIN public.person 
                 ON public.club.chairman = public.person.id`;
@@ -31,7 +31,7 @@ const selectAllClubs = async (sortBy) => {
  */
 const selectClubById = async (id) => {
     try {
-        const result = await pool.query(`SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname
+        const result = await pool.query(`SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.id AS chid, person.fname, person.sname
             FROM public.club 
             LEFT JOIN public.person 
             ON public.club.chairman = public.person.id WHERE club.id =$1`, [id]);
@@ -75,7 +75,7 @@ const updateClub = async (id, fieldsToUpdate) => {
             .join(', ');
         const values = Object.values(fieldsToUpdate);
         values.push(id);
-       return await pool.query(`UPDATE public.club SET ${setClause} WHERE id = $${values.length} RETURNING id;`, values);
+        return await pool.query(`UPDATE public.club SET ${setClause} WHERE id = $${values.length} RETURNING id;`, values);
     } catch (e) {
         throw e;
     }
