@@ -33,7 +33,7 @@ const selectClubById = async (id) => {
     try {
         const result = await pool.query(`SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.f_name, person.surname
             FROM public.club 
-            JOIN public.person 
+            LEFT JOIN public.person 
             ON public.club.chairman = public.person.id WHERE club.id =$1`, [id]);
         return result;
     } catch (e) {
