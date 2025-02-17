@@ -70,9 +70,9 @@ const createPerson = async (req, res) => {
     if(error)
         return res.status(400).send({ message: error.details[0].message});
 
-    const { fName, surname, birth, club } = req.body;
+    const { fname, sname, birth, club } = req.body;
     try {
-        const result = await personModels.insertPerson(fName, surname, birth, club)    
+        const result = await personModels.insertPerson(fname, sname, birth, club)    
         if(result.rows.length < 1) 
             return res.status(200).send({ message: "Nebolo možné zapísať osobu do databázy"});
 

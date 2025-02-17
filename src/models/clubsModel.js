@@ -69,15 +69,31 @@ const insertClub = async (name, city, street, postal, ico, mail, tel, chairman) 
  * @returns 
  */
 const updateClub = async (id, fieldsToUpdate) => {
+    const client = await pool.connect();
     try {
+        await client.query('BEGIN');
+        
         const setClause = Object.keys(fieldsToUpdate)
             .map((key, index) => `${key} = $${index + 1}`)
             .join(', ');
         const values = Object.values(fieldsToUpdate);
         values.push(id);
-        return await pool.query(`UPDATE public.club SET ${setClause} WHERE id = $${values.length} RETURNING id;`, values);
+        
+        const updateClubQuery = `UPDATE public.club SET ${setClause} WHERE id = $${values.length} RETURNING id;`;
+        const updateClubResult = await client.query(updateClubQuery, values);
+
+        if (fieldsToUpdate.chairman) {
+            const updatePersonQuery = 'UPDATE public.person SET club = $1 WHERE id = $2;';
+            await client.query(updatePersonQuery, [id, fieldsToUpdate.chairman]);
+        }
+
+        await client.query('COMMIT');
+        return updateClubResult;
     } catch (e) {
+        await client.query('ROLLBACK');
         throw e;
+    } finally {
+        client.release();
     }
 };
 
