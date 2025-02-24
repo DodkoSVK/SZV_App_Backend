@@ -2,7 +2,7 @@ const { pool } = require('../../config/database');
 
 const selectPerson = async (sortBy) => {
    try {
-        let query = `SELECT person.id, person.fname, person.sname, TO_CHAR(person.birth, 'DD.MM.YYYY') AS birth, club.name AS club
+        let query = `SELECT person.id, person.fname, person.sname, TO_CHAR(person.birth, 'DD.MM.YYYY') AS birth, club.name AS club, club.id AS club_id
             FROM public.person
             LEFT JOIN public.club
             ON public.person.club = public.club.id`;
