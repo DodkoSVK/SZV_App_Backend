@@ -14,11 +14,11 @@ const personRouters = require('./src/routes/personRouter');
 
 const app = express();
 const port = process.env.PORT_BACKEND;
-const secureOptions = {
+/* const secureOptions = {
     key: fs.readFileSync('/etc/letsencrypt/live/app.vzpieranie.sk/privkey.pem'),
     cert: fs.readFileSync('/etc/letsencrypt/live/app.vzpieranie.sk/fullchain.pem')
 }
-
+ */
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,9 +32,9 @@ app.use('/api/person', personRouters);
 app.get('*', (req, res) => {
     res.status(404).send({message: `Stranka ${req.originalUrl} neexistuje`});
 });
-https.createServer(secureOptions, app).listen(port, () => {
+/* https.createServer(secureOptions, app).listen(port, () => {
     console.log(`My SZV application is running on https://app.vzpieranie.sk:${port}`);
-});
-/* app.listen(port, () => {
-    console.log(`🟢 My SZV App backend run on port: ${port}`);
 }); */
+app.listen(port, () => {
+    console.log(`🟢 My SZV App backend run on port: ${port}`);
+});

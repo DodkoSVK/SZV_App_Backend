@@ -51,8 +51,13 @@ const updatePerson = async (id, fieldsToUpdate) => {
         throw e;        
     }
 };
-const deletePerson = () => {
-
+const deletePerson = async (id) => {
+    try {
+        const results = await pool.query('DELETE FROM public.person WHERE id = $1 RETURNING id;', [id]);
+        return results;
+    } catch (e) {
+        throw e;
+    }
 };
 
 

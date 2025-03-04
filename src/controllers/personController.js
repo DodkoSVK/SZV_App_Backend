@@ -106,7 +106,7 @@ const editPerson = async (req, res) => {
         if (result.rowCount === 0)
             return res.status(404).send({ message: "Osoba nebola nájdená." });
 
-        return res.status(200).send({ message: "Osoba bola úspešne aktualizovaná." });
+        return res.status(201).send({ message: "Osoba bola úspešne aktualizovaná." });
     } catch (e) {
         console.log(`🟠 We got a problem: ${e}`);
         return res.status(500).send({ message: "Neočakávaná chyba na strane databázy." });
