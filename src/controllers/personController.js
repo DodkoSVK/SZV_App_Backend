@@ -93,11 +93,11 @@ const editPerson = async (req, res) => {
     if(error) 
         return res.status(400).send({ message: error.details[0].message});    
     const { id } = req.params;
-    const { fName, surname, birth, club } = req.body;
+    const { fname, sname, birth, club } = req.body;
 
     let fieldsToUpdate = {};
-    if (fName) fieldsToUpdate.f_name = fName;
-    if (surname) fieldsToUpdate.surname = surname;
+    if (fname) fieldsToUpdate.fname = fname;
+    if (sname) fieldsToUpdate.sname = sname;
     if (birth) fieldsToUpdate.birth = birth;
     if (club) fieldsToUpdate.club = club;
 
