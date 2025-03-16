@@ -55,7 +55,32 @@ const getClubById = async (req, res) => {
  * @return {*} -> Code 201: Club created Code 400: Wrong request, Code 500: Database error
  */
 const createClub = async (req, res) => {
-    const { error } = clubSchema.createClubSchema.validate(req.body);
+    let clubs = req.body;
+    if (!Array.isArray(clubs))
+        clubs = [clubs];
+
+    try {
+        let insertedClubs = [];
+        for (const club of clubs) {
+            const { error } = clubSchema.createClubSchema.validate(club);
+            if (error)
+                return res.status(400).send({ message: `Chyba v zázname klubu: ${error.details[0].message}` });
+
+            const { name, city, street, postal, ico, mail, tel, chairman } = club;
+            const result = await clubModel.insertClub(name, city, street, postal, ico, mail, tel, chairman);
+            if (result.rows.length > 0) {
+                insertedClubs.push(result.rows[0].id);
+            }            
+        }
+        return res.status(201).send({
+            message: `Vytvorených ${insertedClubs.length} klubov`,
+            ids: insertedClubs
+        });
+    } catch (e) {
+        console.log(`🟠 We got a problem: ${e}`);
+        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+    }
+    /* const { error } = clubSchema.createClubSchema.validate(req.body);
     if(error)
         return res.status(400).send({ message: error.details[0].message});
 
@@ -69,7 +94,7 @@ const createClub = async (req, res) => {
     } catch (e) {
         console.log(`🟠 We got a problem: ${e}`);
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
-    }    
+    }     */
 };
 /**
  * Backend controller for editing an existing club by id
