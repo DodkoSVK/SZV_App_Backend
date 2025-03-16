@@ -8,8 +8,8 @@ const fs = require('fs');
 const { logger } = require('./src/middlewares/logger');
 //routers import
 const clubRouters = require('./src/routes/clubRouter');
-const clubTypeRouters = require('./src/routes/clubTypeRouter');
 const personRouters = require('./src/routes/personRouter');
+const competitionRouter = require('./src/routes/competitionRouter');
 
 
 const app = express();
@@ -25,9 +25,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //Custom middlewares
 app.use(logger);
 //routers use
-app.use('/api/club/type', clubTypeRouters);
 app.use('/api/club', clubRouters);
 app.use('/api/person', personRouters);
+app.use('/api/competition', competitionRouter);
 
 app.get('*', (req, res) => {
     res.status(404).send({message: `Stranka ${req.originalUrl} neexistuje`});
