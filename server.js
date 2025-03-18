@@ -10,6 +10,7 @@ const { logger } = require('./src/middlewares/logger');
 const clubRouters = require('./src/routes/clubRouter');
 const personRouters = require('./src/routes/personRouter');
 const competitionRouter = require('./src/routes/competitionRouter');
+const leagueRouter = require('./src/routes/leagueRouter');
 
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(logger);
 app.use('/api/club', clubRouters);
 app.use('/api/person', personRouters);
 app.use('/api/competition', competitionRouter);
+app.use('/api/league', leagueRouter);
 
 app.get('*', (req, res) => {
     res.status(404).send({message: `Stranka ${req.originalUrl} neexistuje`});

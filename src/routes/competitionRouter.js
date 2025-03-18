@@ -4,8 +4,9 @@ const competitionController = require('../controllers/competitionController');
 
 router.get('/', competitionController.getCompetition);
 router.post('/search', competitionController.searchCompetition);
-/* router.get('/:id', competitionController.getCompetitionById);
 router.post('/', competitionController.createCompetition);
+/* router.get('/:id', competitionController.getCompetitionById);
+
 router.patch('/:id', competitionController.editCompetition);
 router.delete('/:id', competitionController.deleteCompetition); */
 

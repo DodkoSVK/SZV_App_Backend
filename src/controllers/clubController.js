@@ -68,7 +68,7 @@ const createClub = async (req, res) => {
 
             const { name, city, street, postal, ico, mail, tel, chairman } = club;
             const result = await clubModel.insertClub(name, city, street, postal, ico, mail, tel, chairman);
-            if (result.rows.length > 0) {
+            if (result.rowCount > 0) {
                 insertedClubs.push(result.rows[0].id);
             }            
         }

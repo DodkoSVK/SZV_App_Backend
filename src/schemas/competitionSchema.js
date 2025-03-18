@@ -5,13 +5,25 @@ const sortCompetitionSchema = Joi.object({
 });
 const searchCompetitionSchema = Joi.object({
     searchBy: Joi.object({
-        name: Joi.string().required(),
-        group_name: Joi.string().required(),
-        city: Joi.string().required(),
-        date: Joi.date().required(),
-        round: Joi.number().required(),
-        league: Joi.string().required()
+        name: Joi.string().optional(),
+        group_name: Joi.string().optional(),
+        city: Joi.string().optional(),
+        date: Joi.date().optional(),
+        round: Joi.number().optional(),
+        league: Joi.string().optional()
     }).required()
 });
-
-module.exports = { sortCompetitionSchema, searchCompetitionSchema };
+const createCompetitionSchema = Joi.object({
+    year: Joi.number().required(),
+    date: Joi.date().required(),
+    round: Joi.number().required(),
+    league: Joi.number().required(),
+    groups: Joi.array().items(
+        Joi.object({
+            group_name: Joi.string().required(),
+            club: Joi.number().required(),
+            city: Joi.string().required()
+        })
+    ).min(1).required() 
+});
+module.exports = { sortCompetitionSchema, searchCompetitionSchema, createCompetitionSchema };

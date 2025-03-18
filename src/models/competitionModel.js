@@ -42,4 +42,26 @@ const searchCompetition = async (searchBy) => {
     }
 }
 
-module.exports = { selectCompetition, searchCompetition };
+const insertCompetition = async (year, league, round) => {
+    try {
+        const results = await pool.query(
+            'INSERT INTO public.competition (year, league_id, round) VALUES ($1, $2, $3) returning id AS competition_id;', [year, league, round]
+        );
+        return results;
+    } catch (e) {
+        throw e;
+    }
+}
+
+const insertCompetitionLocation = async (competition_id, group_name, city, date, club_id) => {
+    try {
+        const results = await pool.query(
+            'INSERT INTO public.competition_location (competition_id, group_name, city, date, club_id) VALUES ($1, $2, $3, $4, $5) returning id;', [competition_id, group_name, city, date, club_id]
+        );
+        return results;
+    } catch (e) {
+        throw e;
+    }
+}
+
+module.exports = { selectCompetition, searchCompetition, insertCompetition, insertCompetitionLocation };
