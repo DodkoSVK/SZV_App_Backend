@@ -42,10 +42,10 @@ const searchCompetition = async (searchBy) => {
     }
 }
 
-const insertCompetition = async (year, league, round) => {
+const insertCompetition = async (year, league, round, date) => {
     try {
         const results = await pool.query(
-            'INSERT INTO public.competition (year, league_id, round) VALUES ($1, $2, $3) returning id AS competition_id;', [year, league, round]
+            'INSERT INTO public.competition (year, league_id, round, comp_date) VALUES ($1, $2, $3, $4) returning id AS competition_id;', [year, league, round, date]
         );
         return results;
     } catch (e) {
@@ -53,10 +53,10 @@ const insertCompetition = async (year, league, round) => {
     }
 }
 
-const insertCompetitionLocation = async (competition_id, group_name, city, date, club_id) => {
+const insertCompetitionLocation = async (competition_id, group_name, club_id, city) => {
     try {
         const results = await pool.query(
-            'INSERT INTO public.competition_location (competition_id, group_name, city, date, club_id) VALUES ($1, $2, $3, $4, $5) returning id;', [competition_id, group_name, city, date, club_id]
+            'INSERT INTO public.competition_location (competition_id, group_name, club_id, city) VALUES ($1, $2, $3, $4) returning id;', [competition_id, group_name, club_id, city]
         );
         return results;
     } catch (e) {
