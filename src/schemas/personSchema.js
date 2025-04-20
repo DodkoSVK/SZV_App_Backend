@@ -15,6 +15,7 @@ const sortPersonIdSchema = Joi.object({
     id: Joi.number().min(1).required()
 });
 const updatePersonSchema = Joi.object({
+    id: Joi.number().min(1),
     fname: Joi.string(),
     sname: Joi.string(),
     birth: Joi.date(),
