@@ -53,9 +53,9 @@ const selectClubById = async (id) => {
  * @param {*} chairman -> Int
  * @return {*} 
  */
-const insertClub = async (name, city, street, postal, ico, mail, tel, chairman) => {
+const insertClub = async (name, city, street, postal, ico, mail, tel, chairman_id) => {
     try {
-        const results = await pool.query('INSERT INTO public.club (name, city, street, postal, ico, mail, tel, chairman) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;', [name, city, street, postal, ico, mail, tel, chairman]);
+        const results = await pool.query('INSERT INTO public.club (name, city, street, postal, ico, mail, tel, chairman) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;', [name, city, street, postal, ico, mail, tel, chairman_id]);
         return results;
     } catch (e) {        
         throw e;
@@ -84,7 +84,7 @@ const updateClub = async (id, fieldsToUpdate) => {
 
         if (fieldsToUpdate.chairman) {
             const updatePersonQuery = 'UPDATE public.person SET club = $1 WHERE id = $2;';
-            await client.query(updatePersonQuery, [id, fieldsToUpdate.chairman]);
+            await client.query(updatePersonQuery, [id, fieldsToUpdate.chairman_id]);
         }
 
         await client.query('COMMIT');
