@@ -117,7 +117,7 @@ const editClub = async (req, res) => {
     if (ico) fieldsToUpdate.ico = ico;
     if (mail) fieldsToUpdate.mail = mail;
     if (tel) fieldsToUpdate.tel = tel;
-    if (chid) fieldsToUpdate.chairman = chairman_id;
+    if (chairman_id) fieldsToUpdate.chairman = chairman_id;
     try {        
         const result = await clubModel.updateClub(id, fieldsToUpdate);
         if(result.rowCount === 0)
