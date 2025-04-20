@@ -66,8 +66,8 @@ const createClub = async (req, res) => {
             if (error)
                 return res.status(400).send({ message: `Chyba v zázname klubu: ${error.details[0].message}` });
 
-            const { name, city, street, postal, ico, mail, tel, chairman } = club;
-            const result = await clubModel.insertClub(name, city, street, postal, ico, mail, tel, chairman);
+            const { name, city, street, postal, ico, mail, tel, chairman_id } = club;
+            const result = await clubModel.insertClub(name, city, street, postal, ico, mail, tel, chairman_id);
             if (result.rowCount > 0) {
                 insertedClubs.push(result.rows[0].id);
             }            
@@ -107,7 +107,7 @@ const editClub = async (req, res) => {
     if (error)
         return res.status(400).send({ message: error.details[0].message});
     const { id } = req.params;
-    const { name, type, city, street, postal, ico, mail, tel, chid } = req.body;
+    const { name, type, city, street, postal, ico, mail, tel, chairman_id } = req.body;
     let fieldsToUpdate = [];
     if (name) fieldsToUpdate.name = name;
     if (type) fieldsToUpdate.type = type;
@@ -117,7 +117,7 @@ const editClub = async (req, res) => {
     if (ico) fieldsToUpdate.ico = ico;
     if (mail) fieldsToUpdate.mail = mail;
     if (tel) fieldsToUpdate.tel = tel;
-    if (chid) fieldsToUpdate.chairman = chid;
+    if (chid) fieldsToUpdate.chairman = chairman_id;
     try {        
         const result = await clubModel.updateClub(id, fieldsToUpdate);
         if(result.rowCount === 0)

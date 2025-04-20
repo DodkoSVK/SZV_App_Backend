@@ -82,7 +82,7 @@ const updateClub = async (id, fieldsToUpdate) => {
         const updateClubQuery = `UPDATE public.club SET ${setClause} WHERE id = $${values.length} RETURNING id;`;
         const updateClubResult = await client.query(updateClubQuery, values);
 
-        if (fieldsToUpdate.chairman) {
+        if (fieldsToUpdate.chairman_id) {
             const updatePersonQuery = 'UPDATE public.person SET club = $1 WHERE id = $2;';
             await client.query(updatePersonQuery, [id, fieldsToUpdate.chairman_id]);
         }
