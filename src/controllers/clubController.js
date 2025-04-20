@@ -17,7 +17,7 @@ const getClub = async (req, res) => {
     }
     try {
         const result = await clubModel.selectAllClubs(sortBy);
-        console.log(`Results: ${result}`);
+        console.log(`Results: ${JSON.stringify(result)}`);
         if(result.rows.length < 1)
             return res.status(200).send({message: "V databáze sa nenachádzajú žiadne kluby"});
 
