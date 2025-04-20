@@ -8,7 +8,7 @@ const createClubSchema = Joi.object({
     ico: Joi.string().required(),
     mail: Joi.string().allow(''),
     tel: Joi.string().allow(''),
-    chairman: Joi.number().min(1)
+    chairman_id: Joi.number().min(1)
 });
 
 const sortClubSchema = Joi.object({
@@ -27,7 +27,7 @@ const editClubSchema = Joi.object({
     ico: Joi.string(),
     mail: Joi.string().allow(''),
     tel: Joi.string().allow(''),
-    chairman: Joi.number().min(0),
+    chairman_id: Joi.number().min(0),
 });
 
 module.exports = {createClubSchema, sortClubSchema, sortIdSchema, editClubSchema}
