@@ -29,10 +29,11 @@ const getCompetition = async (req, res) => {
                 }
             }
             rawData[competition.comp_id].locations.push({
-                id: competition.clid,
+                id: competition.location_id,
                 group: competition.group_name,
                 city: competition.city,
-                club: competition.club_id,
+                club_id: competition.club_id,
+                club_name: competition.club_name
             });
             console.log(`Competitions: ${JSON.stringify(rawData)}`)
         })
