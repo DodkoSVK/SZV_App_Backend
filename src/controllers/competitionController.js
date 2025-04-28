@@ -22,7 +22,7 @@ const getCompetition = async (req, res) => {
                 rawData[competition.comp_id] = {
                     id: competition.comp_id,
                     league_id: competition.league,
-                    league_name: competition.name,
+                    league_name: competition.league_name,
                     round: competition.round,
                     date: competition.date,
                     locations: []
