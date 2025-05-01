@@ -15,16 +15,17 @@ const searchCompetitionSchema = Joi.object({
 });
 const createCompetitionSchema = Joi.object({
     id: Joi.number().optional(),
-    league: Joi.number().required(),
+    league_id: Joi.number().required(),
     round: Joi.number().required(),
-    date: Joi.date().required(),  
+    date: Joi.date().iso().required(),  // očakáva ISO string
     locations: Joi.array().items(
         Joi.object({
             id: Joi.number().optional(),
             group: Joi.string().required(),
             city: Joi.string().allow("").required(),
-            club: Joi.number().required()            
+            club_id: Joi.number().required()
         })
-    ).min(1).required() 
+    ).min(1).required()
 });
+
 module.exports = { sortCompetitionSchema, searchCompetitionSchema, createCompetitionSchema };
