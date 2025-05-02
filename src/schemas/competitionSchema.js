@@ -28,4 +28,19 @@ const createCompetitionSchema = Joi.object({
     ).min(1).required()
 });
 
-module.exports = { sortCompetitionSchema, searchCompetitionSchema, createCompetitionSchema };
+const updateCompettionSchema = Joi.object({
+    id: Joi.number().min(1),
+    league_id: Joi.number(),
+    round: Joi.number(),
+    date: Joi.date().iso(),
+    locations: Joi.array().items(
+        Joi.object({
+            id: Joi.number(),
+            group: Joi.string(),
+            city: Joi.string(),
+            club_id: Joi.number()
+        })
+    ).min(1).required()
+})
+
+module.exports = { sortCompetitionSchema, searchCompetitionSchema, createCompetitionSchema, updateCompettionSchema };

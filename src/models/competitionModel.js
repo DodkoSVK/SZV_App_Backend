@@ -64,4 +64,29 @@ const insertCompetitionLocation = async (competition_id, group_name, club_id, ci
     }
 }
 
-module.exports = { selectCompetition, searchCompetition, insertCompetition, insertCompetitionLocation };
+const updateCompetition = async (competition_id, fieldsToUpdate) => {
+    try {
+        const setClause = Object.keys(fieldsToUpdate)
+            .map((key, index) => `${key} = $${index+1}`)
+            .join(', ');
+        const values = Object.values(fieldsToUpdate);
+        values.push(competition_id);
+        return await pool.query(`UPDATE competition SET ${setClause} WHERE id = $${values.length} RETURNING id;`, values);
+    } catch (e) {
+        throw e;
+    }
+};
+
+const updateCompetitionLocation = async (location_id, fieldsToUpdate) => {
+    try {
+        const setClause = Object.keys(fieldsToUpdate)
+            .map((key, index) => `${key} = $${index+1}`)
+            .join(', ');
+        const values = Object.values(fieldsToUpdate);
+        values.push(location_id);
+        return await pool.query(`UPDATE competition_location SET ${setClause} WHERE id = $${values.length} RETURNING id;`, values)
+    } catch (e) {
+        throw e;
+    }
+}
+module.exports = { selectCompetition, searchCompetition, insertCompetition, insertCompetitionLocation, updateCompetition, updateCompetitionLocation};

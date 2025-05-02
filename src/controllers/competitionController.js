@@ -95,4 +95,48 @@ const createCompetition = async (req, res) => {
         return res.status(500).send({message: "Neocakavana chyba na strane databazy."});        
     }   
 }
-module.exports = { getCompetition, searchCompetition, createCompetition };
+
+const editCompetition = async (req, res) => {
+    const { error } = competitionSchema.updateCompettionSchema.validate(req.body);
+    if (error)
+        return res.status(400).send({ message: error.details[0].message });
+
+    const { id } = req.params;
+    const { league_id, round, date, locations } = req.body;
+
+    let fieldsToupdate = {};
+    if (league_id) fieldsToupdate.league_id = league_id;
+    if (round) fieldsToupdate.round = round;
+    if (date) {
+        fieldsToupdate.comp_date = date;
+        fieldsToupdate.year = new Date(date).getFullYear();
+    }
+
+    try {
+        // 1. Edit Competition
+        const result = await competitionModel.updateCompetition(id, fieldsToupdate);
+        if (result.rowCount === 0)
+            return res.status(404).send({ message: "Súťaž nebola nájdená." });
+
+        // 2. Edit locations
+        if (locations && locations.length > 0) {
+            await Promise.all(locations.map(async (loc) => {
+                const { id, group, city, club_id } = loc;
+                let fieldsToUpdate = {};
+                if (group) fieldsToUpdate.group_name = group;
+                if (city) fieldsToUpdate.city = city;
+                if (club_id) fieldsToUpdate.club_id = club_id;
+
+                await competitionModel.updateCompetitionLocation(id, fieldsToUpdate);
+            }));
+        }
+
+        return res.status(201).send({ message: "Súťaž a lokality boli úspešne aktualizované." });
+
+    } catch (e) {
+        console.log(`🟠 We got a problem: ${e}`);
+        return res.status(500).send({ message: "Neočakávaná chyba na strane databázy." });
+    }
+};
+
+module.exports = { getCompetition, searchCompetition, createCompetition, editCompetition };
