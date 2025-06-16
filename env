@@ -1,0 +1,8 @@
+PORT_BACKEND = 3002
+DB_USER = swf_user
+DB_HOST = localhost
+DB_NAME = slovakweightlifting
+DB_PASSWORD = M@16Cabrine_Read_W3ightl1fting
+DB_PORT = 5432
+DATABASE_URL=postgresql://swf_user:M@16Cabrine_Read_W3ightl1fting@localhost:5433/slovakweightlifting
+JWT_TOKEN_PASS = sixrav-qazpub-waFpe4
