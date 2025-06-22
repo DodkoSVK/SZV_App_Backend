@@ -7,6 +7,7 @@ const fs = require('fs');
 //middlewares
 const { logger } = require('./src/middlewares/logger');
 //routers import
+const authRouters = require('./src/routes/authRouter');
 const clubRouters = require('./src/routes/clubRouter');
 const personRouters = require('./src/routes/personRouter');
 const competitionRouter = require('./src/routes/competitionRouter');
@@ -26,6 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //Custom middlewares
 app.use(logger);
 //routers use
+app.use('/api/auth', authRouters);
 app.use('/api/club', clubRouters);
 app.use('/api/person', personRouters);
 app.use('/api/competition', competitionRouter);

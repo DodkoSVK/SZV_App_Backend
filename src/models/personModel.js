@@ -1,20 +1,20 @@
 const { pool } = require('../../config/database');
 
 const selectPerson = async (sortBy) => {
-   try {
-        let query = `SELECT person.id, person.fname, person.sname, TO_CHAR(person.birth, 'DD.MM.YYYY') AS birth, club.name AS club, club.id AS club_id
-            FROM public.person
-            LEFT JOIN public.club
-            ON public.person.club = public.club.id`;
+    try {
+        let query = `SELECT 	p.id, p.fname, p.sname,	TO_CHAR(p.birth, 'DD.MM.YYYY') AS birth, c.name AS club, c.id AS club_id, a.login AS login
+                    FROM public.person p
+                    LEFT JOIN public.club c ON p.club = c.id
+                    LEFT JOIN public.auth a ON p.id = a.person_id;`;
         if(sortBy)
             query += ` ORDER BY ${sortBy};`;
         else
             ';';
         const result = await pool.query(query);
         return result;
-   } catch (e) {
+    } catch (e) {
         throw e;
-   }
+    }
 };
 const selectPersonWithoutClub = async () => {
     try {
