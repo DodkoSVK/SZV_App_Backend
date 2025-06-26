@@ -2,10 +2,11 @@ const { pool } = require('../../config/database');
 
 const selectPerson = async (sortBy) => {
     try {
-        let query = `SELECT 	p.id, p.fname, p.sname,	TO_CHAR(p.birth, 'DD.MM.YYYY') AS birth, c.name AS club, c.id AS club_id, a.login AS login
-                    FROM public.person p
-                    LEFT JOIN public.club c ON p.club = c.id
-                    LEFT JOIN public.auth a ON p.id = a.person_id;`;
+        let query = `SELECT 	p.id, p.fname, p.sname,	TO_CHAR(p.birth, 'DD.MM.YYYY') AS birth, c.name AS club, c.id AS club_id, a.login AS login, i.email, i.phone
+            FROM public.person p
+            LEFT JOIN public.club c ON p.club = c.id
+            LEFT JOIN public.auth a ON p.id = a.person_id
+            LEFT JOIN public.person_contact i ON p.id = i.person_id;`;
         if(sortBy)
             query += ` ORDER BY ${sortBy};`;
         else
