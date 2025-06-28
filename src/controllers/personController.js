@@ -1,6 +1,9 @@
 const personModels = require('../models/personModel');
 const personSchema = require('../schemas/personSchema');
 
+//For Test Only
+const mail = require('../../config/mail');
+
 /**
  * Backend controller for getting people from the DB with an optional parameter for sorting
  * @param {*} req 
@@ -10,6 +13,7 @@ const personSchema = require('../schemas/personSchema');
  */
 const getPerson = async (req, res) => {
     const { sortBy } = req.query;
+    mail.sendMail()
     if(sortBy) {
         const { error } = personSchema.sortPersonSchema.validate({sortBy});
         if (error)
