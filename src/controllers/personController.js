@@ -12,8 +12,7 @@ const mail = require('../../config/mail');
  * 0
  */
 const getPerson = async (req, res) => {
-    const { sortBy } = req.query;
-    mail.sendMail()
+    const { sortBy } = req.query;    
     if(sortBy) {
         const { error } = personSchema.sortPersonSchema.validate({sortBy});
         if (error)
@@ -56,7 +55,7 @@ const getPersonByID = async (req, res) => {
     try {
         const result = await personModels.selectPersonById(id);
         if(result.rows.length < 1) 
-            return res.status(200).send({ message: "V databáze sa konkrétny klub" })
+            return res.status(200).send({ message: "V databáze sa konkrétny clovek nenachadza" })
         return res.status(200).json(result.rows);
     } catch (e) {
         console.log(`🟠 We got a problem: ${e}`);
@@ -74,9 +73,14 @@ const createPerson = async (req, res) => {
     if(error)
         return res.status(400).send({ message: error.details[0].message});
 
-    const { fname, sname, birth, club } = req.body;
+    const { fname, sname, birth, club_id, email, phone } = req.body;
+
+    let clubIdToInsert = club_id;
+    if (club_id === 0) {
+        clubIdToInsert = null;
+    }
     try {
-        const result = await personModels.insertPerson(fname, sname, birth, club)    
+        const result = await personModels.insertPerson(fname, sname, birth, clubIdToInsert, email, phone)    
         if(result.rowCount < 1) 
             return res.status(200).send({ message: "Nebolo možné zapísať osobu do databázy"});
 
@@ -93,20 +97,27 @@ const createPerson = async (req, res) => {
  * @returns Code 200: Person updated, Code 400: Wrong request, Code 500: Database error
  */
 const editPerson = async (req, res) => {
+    console.log("validating payload", req.body);
+    console.log("updatePersonSchema", personSchema.updatePersonSchema.describe());
+
+
     const { error } = personSchema.updatePersonSchema.validate(req.body);
     if(error) 
         return res.status(400).send({ message: error.details[0].message});    
     const { id } = req.params;
-    const { fname, sname, birth, club } = req.body;
+    const { fname, sname, birth, club_id, email, phone } = req.body;
 
     let fieldsToUpdate = {};
+    let fieldsToUpdate2 = {};
     if (fname) fieldsToUpdate.fname = fname;
     if (sname) fieldsToUpdate.sname = sname;
     if (birth) fieldsToUpdate.birth = birth;
-    if (club) fieldsToUpdate.club = club;
+    if (club_id) fieldsToUpdate.club = club_id;
+    if (email) fieldsToUpdate2.email = email;
+    if (phone) fieldsToUpdate2.phone = phone;
 
     try {
-        const result = await personModels.updatePerson(id, fieldsToUpdate);
+        const result = await personModels.updatePerson(id, fieldsToUpdate, fieldsToUpdate2);
         if (result.rowCount === 0)
             return res.status(404).send({ message: "Osoba nebola nájdená." });
 

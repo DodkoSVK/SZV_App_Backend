@@ -26,7 +26,7 @@
     "dev": "nodemon server.js",
     "start-backend": "cd ../SZV_APP_Backend && yarn dev",
     "start-frontend": "cd ../SZV_APP_Frontend && yarn dev",
-    "start-tunnel": "ssh -f -N -L 5433:localhost:5432 -L 2525:localhost:25 root@116.203.159.90",
+    "start-tunnel": "ssh -f -N -L 5433:localhost:5432 root@116.203.159.90",
     "both": "yarn start-tunnel && concurrently \"yarn start-backend\" \"yarn start-frontend\""
   }
 }

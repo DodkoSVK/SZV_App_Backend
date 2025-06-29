@@ -1,4 +1,5 @@
 const authModel = require('../models/authModel');
+const mail = require('../../config/mail')
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -9,7 +10,7 @@ const TOKEN_EXPIRATION = '1h';
 
 
 const register = async (req, res) => {
-    const { personId, firstName, lastName} = req.body;   
+    const { personId, firstName, lastName, email} = req.body;   
     const login = generateLogin(firstName, lastName);
 
     console.log(`Login: ${login}`);
@@ -30,6 +31,10 @@ const register = async (req, res) => {
             "login": login,
             "password" : password
         }
+        mailMessage = mail.resigerEmailTemplate(login, password)
+        mail.sendEmail('"SZV APP " <info@app.vzpieranie.sk>', email, "SZV APP - Prihlasovacie údate", mailMessage)
+
+
         return res.status(200).json(loginData)
 
     } catch (e) {
