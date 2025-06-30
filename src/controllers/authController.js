@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_TOKEN_PASS;
 const TOKEN_EXPIRATION = '1h';
 
 
@@ -43,8 +43,62 @@ const register = async (req, res) => {
     }
 };
 
+const login = async (req, res) => {
+    const { login, password } = req.body;
+    try {
+        const user = await authModel.getUserByLogin(login);
+        const userData = user.rows[0];
+        console.log(`User login: ${userData.login}, pass: ${userData.password}`)
+        if (!user) 
+            return res.status(401).json({ message: "Zlé prihlasovacie údaje."});
+        
+        const isMatch = await bcrypt.compare(password, userData.password);
+        if (!isMatch)
+            return res.status(401).json({ message: "Zlé prihlasovacie údaje."});
 
+        if(!userData.last_login)
+            return res.status(200).json({
+                forceChange: true,
+                userId: user.person_id,
+                message: 'Prvé prihlásenie — prosím nastavte nové heslo'
+            });
 
+        const token = jwt.sign({ id: userData.person_id, login: userData.login}, JWT_SECRET, { expiresIn: TOKEN_EXPIRATION});
+        res.json({ token })
+    } catch (e) {
+        console.log(`🟠 We got a problem: ${e}`);
+        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+    }
+}
+
+const getProfile = async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if(!authHeader)
+        return res.status(400).json({ message: "Login token missing."})
+
+    const token = authHeader.split(' ')[1];
+    try {
+        const payload = jwt.verify(token, JWT_SECRET)
+        res.json({ message: 'Údaje používateľa', user: payload});
+    } catch (e) {
+        res.status(403).json({ message: "Wrong or expired token"});
+    }
+}
+
+const changePassword = async (req, res) => {
+    const { userId, newPassword } = req.body;
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const result = authModel.updatePassword(userId, hashedPassword);
+        if (!result)
+            res.status(500).json({ message: 'Nepodarilo sa zmeniť heslo' });
+        res.status(200).json({ message: "Heslo bolo zmenené, môžete sa prihlásiť"})
+    } catch (e) {
+        console.error('changePassword error:', err);
+        res.status(500).json({ message: 'Nepodarilo sa zmeniť heslo' });
+    }
+}
 // Support method
 const removeDiacritics = (str) =>
     str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -83,4 +137,6 @@ const generatePassword = (length = 12) => {
 };
 
 
-module.exports = { register }
+
+
+module.exports = { register, login, getProfile }
