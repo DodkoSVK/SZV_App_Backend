@@ -44,13 +44,13 @@ const resigerEmailTemplate = (login, temporaryPassword ) => {
             <table width="600" style="background-color: #ffffff; border-radius: 8px; overflow: hidden;">
               <tr>
                 <td style="background-color: #4CAF50; color: #ffffff; padding: 20px; text-align: center;">
-                  <h1>👋 Vitajte v našej aplikácii!</h1>
+                  <h1>👋 Vitajte v našej aplikácii SZV!</h1>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 20px;">
                   <p>Dobrý deň,</p>
-                  <p>ďakujeme za registráciu. Tu sú vaše prihlasovacie údaje:</p>
+                  <p>Boli Vám vygenerované prihlasovacie údaje.:</p>
                   <ul>
                     <li><strong>Login:</strong> <span style="color: #4CAF50;">${login}</span></li>
                     <li><strong>Jednorazové heslo:</strong> <span style="color: #4CAF50;">${temporaryPassword}</span></li>
@@ -59,7 +59,7 @@ const resigerEmailTemplate = (login, temporaryPassword ) => {
                   <p>
                     👉 Kliknite sem pre prihlásenie:
                     <br />
-                    <a href="https://tvojweb.sk/login" style="display: inline-block; background-color: #4CAF50; color: #ffffff; padding: 10px 20px; border-radius: 4px; text-decoration: none;">
+                    <a href="https://app.vzpieranie.sk/login" style="display: inline-block; background-color: #4CAF50; color: #ffffff; padding: 10px 20px; border-radius: 4px; text-decoration: none;">
                       Prihlásiť sa
                     </a>
                   </p>
@@ -71,7 +71,7 @@ const resigerEmailTemplate = (login, temporaryPassword ) => {
               </tr>
               <tr>
                 <td style="background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 12px; color: #888888;">
-                  © ${new Date().getFullYear()} Vaša Spoločnosť. Všetky práva vyhradené.
+                  © ${new Date().getFullYear()} Emday Photography. Všetky práva vyhradené.
                 </td>
               </tr>
             </table>

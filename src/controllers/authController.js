@@ -10,8 +10,8 @@ const TOKEN_EXPIRATION = '1h';
 
 
 const register = async (req, res) => {
-    const { personId, firstName, lastName, email} = req.body;   
-    const login = generateLogin(firstName, lastName);
+    const { id, fname, sname, email} = req.body;   
+    const login = generateLogin(fname, sname);
 
     console.log(`Login: ${login}`);
     
@@ -22,7 +22,7 @@ const register = async (req, res) => {
 
         const password = generatePassword();
         const hashedPassword = await bcrypt.hash(password, 10);
-        const userLoginId = await authModel.insertNewLogin(personId, login, hashedPassword);
+        const userLoginId = await authModel.insertNewLogin(id, login, hashedPassword);
 
         if (userLoginId.rowCount < 1)
             return res.status(400).send({ message: "Nebolo možné registrovať používateľa"});
