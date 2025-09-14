@@ -48,7 +48,7 @@ const login = async (req, res) => {
     try {
         const user = await authModel.getUserByLogin(login);
         const userData = user.rows[0];
-        console.log(`User login: ${userData.login}, pass: ${userData.password}`)
+        console.log(`User login: ${userData.login}`)
         if (!user) 
             return res.status(401).json({ message: "Zlé prihlasovacie údaje."});
         
@@ -59,7 +59,7 @@ const login = async (req, res) => {
         if(!userData.last_login)
             return res.status(200).json({
                 forceChange: true,
-                userId: user.person_id,
+                userId: userData.person_id,
                 message: 'Prvé prihlásenie — prosím nastavte nové heslo'
             });
 
