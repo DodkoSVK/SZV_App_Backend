@@ -71,6 +71,8 @@ const login = async (req, res) => {
     }
 }
 
+
+
 const getProfile = async (req, res) => {
     const authHeader = req.headers.authorization;
     if(!authHeader)
