@@ -1,96 +1,106 @@
 const { pool } = require('../../config/database');
+const clubQueries = require('../queries/clubQueries');
+
 
 /**
- * Database function for get clubs from DB with optional parameter for sorting
- * @param {*} sortBy -> id, name, city, ico (Identifikacne Cislo Organizacie), tel, chairman
+ * Get all clubs with optional sorting
+ * @param {String} sortBy - Column name to sort by (validated against allowedSortColumns)
+ * @returns {Promise<Object>} Database query result
  */
-const selectAllClubs = async (sortBy) => {   
-   let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, COALESCE(person.fname, 'Štatutár') AS fname,  COALESCE(person.sname, 'Nepriradený') AS sname, COALESCE(person.id, 0) AS chairman_id
-                FROM public.club 
-                LEFT JOIN public.person 
-                ON public.club.chairman = public.person.id`;
-
-    if(sortBy)
-        console.log(`Sort by: ${sortBy}`);
+const selectAllClubs = async (sortBy) => { 
     try {
-        if(sortBy)
-            query += ` ORDER BY ${sortBy};`;
+        let query = clubQueries.selectAll;
+
+        // Safe sorting - only allow predefined columns
+        if (sortBy && clubQueries.allowedSortColumns.includes(sortBy)) 
+            query += ` ORDER BY ${sortBy}`;
         else
-            query += ';';
-        
-        const result = await pool.query(query);        
-        return result;
+            // Default sorting by club.name
+            query += ` ORDER BY club.name`
+
+        const result = await pool.query(query);
+        return result
     } catch (e) {
+        console.error('🔴 Database error in selectAllClubs:', e);
         throw e;
     }
 };
+
 /**
- * Database function for get a club by ID
- * @param {*} id -> Club ID
- * @returns 
+ * Get single club by ID
+ * @param {Number} id - Club ID
+ * @returns {Promise<Object>} Database query result
  */
 const selectClubById = async (id) => {
     try {
-        const result = await pool.query(`SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, person.id AS chid, person.fname, person.sname
-            FROM public.club 
-            LEFT JOIN public.person 
-            ON public.club.chairman = public.person.id WHERE club.id =$1`, [id]);
+        const result = await pool.query(clubQueries.selectById, [id]);
         return result;
     } catch (e) {
+        console.error('🔴 Database error in selectClubById:', e);
         throw e;
     }
 }
+
 /**
- * Database function for create a new club.
- * @param {*} name -> Varchar
- * @param {*} type -> Int
- * @param {*} city -> Varchar
- * @param {*} street -> Varchar
- * @param {*} postal -> Varchar
- * @param {*} ico -> Varchar
- * @param {*} mail -> Varchar
- * @param {*} tel -> Varchar
- * @param {*} chairman -> Int
- * @return {*} 
+ * Insert single club
+ * @param {String} name - Club name
+ * @param {Number} type - Club type
+ * @param {Number} cityId - City ID (foreign key)
+ * @param {String} street - Street address
+ * @param {String} postal - Postal code
+ * @param {String} ico - Organization ID number
+ * @param {String} email - Email address
+ * @param {String} phone - Phone number
+ * @param {Number} chairman_id - Chairman person ID (foreign key)
+ * @returns {Promise<Object>} Database query result with RETURNING id, name
  */
 const insertClub = async (name, city, street, postal, ico, mail, tel, chairman_id) => {
     try {
-        const results = await pool.query('INSERT INTO public.club (name, city, street, postal, ico, mail, tel, chairman) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;', [name, city, street, postal, ico, mail, tel, chairman_id]);
+        const result = await pool.query(
+            clubQueries.insert,
+            [name, type, cityId, street, postal, ico, email, phone, chairman_id]
+        );
         return results;
-    } catch (e) {        
+    } catch (e) {       
+        console.error('🔴 Database error in insertClub:', e); 
         throw e;
     }
 };
 
 /**
- * Database function to update a club
- * @param {*} fieldsToUpdate -> Which columns been updated
- * @param {*} valuesToUpdate -> Values corresponsing to columns
- * @returns 
+ * Bulk insert clubs with transaction
+ * All clubs are inserted in a single transaction - if one fails, all are rolled back
+ * @param {Array<Object>} clubs - Array of club objects
+ * @returns {Promise<Array>} Array of inserted club records with id and name
  */
-const updateClub = async (id, fieldsToUpdate) => {
+const insertClubBulk = async (clubs) => {
     const client = await pool.connect();
+    
     try {
         await client.query('BEGIN');
         
-        const setClause = Object.keys(fieldsToUpdate)
-            .map((key, index) => `${key} = $${index + 1}`)
-            .join(', ');
-        const values = Object.values(fieldsToUpdate);
-        values.push(id);
+        const insertedClubs = [];
         
-        const updateClubQuery = `UPDATE public.club SET ${setClause} WHERE id = $${values.length} RETURNING id;`;
-        const updateClubResult = await client.query(updateClubQuery, values);
-
-        if (fieldsToUpdate.chairman_id) {
-            const updatePersonQuery = 'UPDATE public.person SET club = $1 WHERE id = $2;';
-            await client.query(updatePersonQuery, [id, fieldsToUpdate.chairman_id]);
+        for (const club of clubs) {
+            const { name, type, city_id, street, postal, ico, email, phone, chairman_id } = club;
+            
+            const result = await client.query(
+                clubQueries.insert,
+                [name, type, city_id, street, postal, ico, email, phone, chairman_id]
+            );
+            
+            if (result.rows.length > 0) {
+                insertedClubs.push(result.rows[0]);
+            }
         }
-
+        
         await client.query('COMMIT');
-        return updateClubResult;
+        console.log(`✅ Successfully inserted ${insertedClubs.length} clubs`);
+        return insertedClubs;
+        
     } catch (e) {
         await client.query('ROLLBACK');
+        console.error('🔴 Database error in insertClubBulk, transaction rolled back:', e);
         throw e;
     } finally {
         client.release();
@@ -98,17 +108,70 @@ const updateClub = async (id, fieldsToUpdate) => {
 };
 
 /**
- * Database function to delete club from DB
- * @param {*} id -> Club ID
- * @returns 
+ * Update club with dynamic fields
+ * @param {Number} id - Club ID
+ * @param {Object} fieldsToUpdate - Object with column names as keys and values to update
+ * @returns {Promise<Object>} Database query result with RETURNING id, name
+ */
+const updateClub = async (id, fieldsToUpdate) => {
+    const client = await pool.connect();
+    
+    try {
+        await client.query('BEGIN');
+        
+        // Build dynamic UPDATE query
+        const updateQuery = clubQueries.buildUpdateQuery(fieldsToUpdate);
+        const values = [...Object.values(fieldsToUpdate), id];
+        
+        const result = await client.query(updateQuery, values);
+        
+        // If chairman is being updated, update the person's club_id as well
+        if (fieldsToUpdate.chairman_id) {
+            await client.query(
+                clubQueries.updatePersonClub,
+                [id, fieldsToUpdate.chairman_id]
+            );
+            console.log(`✅ Updated person ${fieldsToUpdate.chairman_id} club_id to ${id}`);
+        }
+        
+        await client.query('COMMIT');
+        console.log(`✅ Successfully updated club ID ${id}`);
+        return result;
+        
+    } catch (e) {
+        await client.query('ROLLBACK');
+        console.error('🔴 Database error in updateClub, transaction rolled back:', e);
+        throw e;
+    } finally {
+        client.release();
+    }
+};
+
+/**
+ * Delete club by ID
+ * @param {Number} id - Club ID
+ * @returns {Promise<Object>} Database query result with RETURNING id, name
  */
 const deleteClubDB = async (id) => {
     try {
-        const results = await pool.query('DELETE FROM public.club WHERE id = $1 RETURNING id;', [id]);
-        return results;
+        const result = await pool.query(clubQueries.delete, [id]);
+        
+        if (result.rowCount > 0) {
+            console.log(`✅ Successfully deleted club ID ${id}`);
+        }
+        
+        return result;
     } catch (e) {
+        console.error('🔴 Database error in deleteClubDB:', e);
         throw e;
     }
 };
 
-module.exports = {selectAllClubs, selectClubById, insertClub, updateClub, deleteClubDB};
+module.exports = {
+    selectAllClubs,
+    selectClubById,
+    insertClub,
+    insertClubBulk,
+    updateClub,
+    deleteClubDB
+};
