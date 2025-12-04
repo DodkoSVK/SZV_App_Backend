@@ -33,7 +33,7 @@ const selectAllClubs = async (sortBy) => {
  */
 const selectClubById = async (id) => {
     try {
-        const result = await pool.query(clubQueries.selectById, [id];)
+        const result = await pool.query(clubQueries.selectById, [id]);
         return result;
     } catch (e) {
         console.error('🔴 Database error in selectClubById:', e);
