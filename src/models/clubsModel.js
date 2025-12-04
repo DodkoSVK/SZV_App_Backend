@@ -5,10 +5,12 @@ const { pool } = require('../../config/database');
  * @param {*} sortBy -> id, name, city, ico (Identifikacne Cislo Organizacie), tel, chairman
  */
 const selectAllClubs = async (sortBy) => {   
-   let query = `SELECT club.id, club.name, club.city, club.street, club.postal, club.ico, club.mail, club.tel, COALESCE(person.fname, 'Štatutár') AS fname,  COALESCE(person.sname, 'Nepriradený') AS sname, COALESCE(person.id, 0) AS chairman_id
-                FROM public.club 
-                LEFT JOIN public.person 
-                ON public.club.chairman = public.person.id`;
+   let query = `SELECT club.id, club.name, city.name AS city, club.street, club.postal, club.ico, club.email, club.phone, COALESCE(person.first_name, 'Štatutár') AS fname,  COALESCE(person.last_name, 'Nepriradený') AS sname, COALESCE(person.id, 0) AS chairman_id
+        FROM public.club 
+        LEFT JOIN public.person 
+        ON public.club.chairman_id = public.person.id
+        LEFT JOIN public.city
+        ON public.club.city_id = public.city.id;`;
 
     if(sortBy)
         console.log(`Sort by: ${sortBy}`);
