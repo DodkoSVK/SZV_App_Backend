@@ -2,151 +2,260 @@ const clubModel = require('../models/clubsModel');
 const clubSchema = require('../schemas/clubSchema');
 
 /**
- * Backend controller for getting clubs from the DB with an optional parameter for sorting
- * @param {*} req 
- * @param {*} res 
- * @return {*} -> Code 200: All data retrieved or the empty DB, Code 400: Wrong request, Code 500: Database error
- * 
+ * Get all clubs with optional sorting
+ * @route GET /api/club?sortBy=name
  */
 const getClub = async (req, res) => {
     const { sortBy } = req.query;
+
+    // Validate sortBy parameter provided
     if (sortBy) {
         const { error } = clubSchema.sortClubSchema.validate({ sortBy });
         if(error)
-            return res.status(400).send({ message: error.details[0].message });
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message
+            });
     }
+
     try {
         const result = await clubModel.selectAllClubs(sortBy);
-        console.log(`Results: ${JSON.stringify(result)}`);
-        if(result.rows.length < 1)
-            return res.status(200).send({message: "V databáze sa nenachádzajú žiadne kluby"});
 
-        return res.status(200).json(result.rows);
+        // Empty result is OK - return empty array
+        if (result.rows.length < 1)
+            return res.status(200).json({
+                success: true,
+                message: "V databáze sa nenachádzajú žiadne kluby",
+                data: []
+            });
+
+        return res.status(200).json({
+            success: true,
+            data: result.rows,
+            count: result.rows.length
+        });
+
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+        console.error(`🔴 Error in getClub: ${e.message}`, e);
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
     }
 };
+
 /**
- * Backend controller for getting clubs from WB by their ID
- * @param {*} req 
- * @param {*} res
- * @return {*} -> Code 200: All data retrieved or the empty DB, Code 400: Wrong request, Code 500: Database error
+ * Get single club by ID
+ * @route GET /api/club/:id
  */
 const getClubById = async (req, res) => {
     const { id } = req.params;
-    const { error } = clubSchema.sortIdSchema.validate({ id });
-    if(error)
-        return res.status(400).send({ message: error.details[0].message });     
-    try {
-        const result = await clubModel.selectClubById(id);
-        if (result.rows.length < 1)
-            return res.status(200).send({message: "V databáze sa nenachádza žiadny klub s konkrétnym ID"});
 
-        return res.status(200).json(result.rows);
+    // Validate ID parameter
+    const { error } = clubSchema.sortIdSchema.validate({ id: parseInt(id) });
+    if(error)
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    
+    try {
+       const result = await clubModel.selectClubById(parseInt(id));
+
+        if (result.rows.length < 1)
+            return res.status(404).json({
+                success: false,
+                message: `Klub s ID ${id} nebol nájdený`
+            });
+
+        return res.status(200).json({
+            success: true,
+            data: result.rows[0]
+        });
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+        console.error(`🔴 Error in getClubById: ${e.message}`, e);
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
     }
 };
+
 /**
- * Backend controller for creating a new club
- * @param {*} req 
- * @param {*} res
- * @return {*} -> Code 201: Club created Code 400: Wrong request, Code 500: Database error
+ * Create new club(s) - supports single object or array
+ * @route POST /api/club
  */
 const createClub = async (req, res) => {
     let clubs = req.body;
-    if (!Array.isArray(clubs))
+
+    // Convert single object to array for uniform processing
+    if (!Array.isArray(clubs)) {
         clubs = [clubs];
-
-    try {
-        let insertedClubs = [];
-        for (const club of clubs) {
-            const { error } = clubSchema.createClubSchema.validate(club);
-            if (error)
-                return res.status(400).send({ message: `Chyba v zázname klubu: ${error.details[0].message}` });
-
-            const { name, city, street, postal, ico, mail, tel, chairman_id } = club;
-            const result = await clubModel.insertClub(name, city, street, postal, ico, mail, tel, chairman_id);
-            if (result.rowCount > 0) {
-                insertedClubs.push(result.rows[0].id);
-            }            
-        }
-        return res.status(201).send({
-            message: `Vytvorených ${insertedClubs.length} klubov`,
-            ids: insertedClubs
-        });
-    } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
     }
-    /* const { error } = clubSchema.createClubSchema.validate(req.body);
-    if(error)
-        return res.status(400).send({ message: error.details[0].message});
 
-    const { name, city, street, postal, ico, mail, tel, chairman } = req.body;
+    // Validate all clubs before inserting any
+    for (let i = 0; i < clubs.length; i++) {
+        const { error } = clubSchema.createClubSchema.validate(clubs[i]);
+        if (error)
+            return res.status(400).json({
+                success: false,
+                message: `Chyba v zázname klubu na pozícii ${i + 1}: ${error.details[0].message}`
+            });
+    }
+
     try {
-        const result = await clubModel.insertClub(name, city, street, postal, ico, mail, tel, chairman);
-        if (result.rows.length < 1)
-            return res.status(500).send({message: "Nebolo mozne zapisat klub do databazy"});
+        const insertedClubs = await clubModel.insertClubBulk(clubs);
 
-        return res.status(201).send({message: `Klub vytvorený`});
+        return res.status(201).json({
+            success: true,
+            message: `Vytvorených ${insertedClubs.length} klubov`,
+            data: insertedClubs
+        });        
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
-    }     */
+        console.error(`🔴 Error in createClub: ${e.message}`, e);
+
+        // Check for specific database errors
+        if (e.code === '23505') // Unique violation
+            return res.status(409).json({
+                success: false,
+                message: "Klub s týmto IČO už existuje."
+            });
+                
+        if (e.code === '23503') // Foreign key violation
+            return res.status(400).json({
+                success: false,
+                message: "Neplatné ID predsedu alebo mesta."
+            });
+        
+        
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
+    }
 };
+
 /**
- * Backend controller for editing an existing club by id
- * @param {*} req
- * @param {*} res
- * @return {*} -> Code 201: Club updated, Code 400: Wrong request, Code 500: Database error
+ * Update existing club by ID
+ * @route PATCH /api/club/:id
  */
 const editClub = async (req, res) => {
-    const { error } = clubSchema.editClubSchema.validate(req.body);
-    if (error)
-        return res.status(400).send({ message: error.details[0].message});
     const { id } = req.params;
-    const { name, type, city, street, postal, ico, mail, tel, chairman_id } = req.body;
-    let fieldsToUpdate = [];
-    if (name) fieldsToUpdate.name = name;
-    if (type) fieldsToUpdate.type = type;
-    if (city) fieldsToUpdate.city = city;
-    if (street) fieldsToUpdate.street = street;
-    if (postal) fieldsToUpdate.postal = postal;
-    if (ico) fieldsToUpdate.ico = ico;
-    if (mail) fieldsToUpdate.mail = mail;
-    if (tel) fieldsToUpdate.tel = tel;
-    if (chairman_id) fieldsToUpdate.chairman = chairman_id;
-    try {        
-        const result = await clubModel.updateClub(id, fieldsToUpdate);
-        if(result.rowCount === 0)
-            return res.status(500).send({message: "Nebolo mozne upravit klub v databáze"});
 
-        return res.status(201).send({message: `Klub s ID: ${id} bol upravený`});
+    // Validate ID parameter
+    const { error: idError } = clubSchema.sortIdSchema.validate({ id: parseInt(id)})
+    if (idError)
+        return res.status(400).json({
+            success: false,
+            message: idError.details[0].message
+        });
+
+    // Validate request body
+    const { error } = clubSchema.editClubSchema.validate(req.body); 
+    if (error)
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    
+    // Check if there's anything to update
+    const allowedFields = ['name', 'type', 'city_id', 'street', 'postal', 'ico', 'email', 'phone', 'chairmain_id'];
+    let fieldsToUpdate = {};
+    
+    allowedFields.forEach(field => {
+        if(req.body[field] !== undefined)
+            fieldsToUpdate[field] = req.body[field];
+    })
+
+    if (Object.keys(fieldsToUpdate).length === 0) 
+         return res.status(400).json({
+            success: false,
+            message: "Neboli poskytnuté žiadne polia na aktualizáciu"
+        });
+
+
+    try {
+        const result = await clubModel.updateClub(parseInt(id), fieldsToUpdate);
+
+        if (result.rowCount === 0)
+            return res.status(404).json({
+                success: false,
+                message: `Klub s ID ${id} nebol nájdený`
+            });
+        
+        return res.status(200).json({
+            success: true,
+            message: `Klub s ID ${id} bol úspešne aktualizovaný`,
+            data: result.rows[0]
+        });
+
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+        console.error(`🔴 Error in editClub: ${e.message}`, e);
+        
+        // Check for specific database errors
+        if (e.code === '23505') 
+            return res.status(409).json({
+                success: false,
+                message: "Klub s týmto IČO už existuje."
+            });        
+        
+        if (e.code === '23503') 
+            return res.status(400).json({
+                success: false,
+                message: "Neplatné ID predsedu alebo mesta."
+            });        
+        
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
+    
     }   
 };
+
 /**
- * Backend controller to delete an existing club by id
- * @param {*} req 
- * @param {*} res 
- * @returns -> Code 200: Club deleted, Code 500: Database error
+ * Delete club by ID
+ * @route DELETE /api/club/:id
  */
 const deleteClub = async (req, res) => {
     const { id } = req.params;
+    
+    // Validate ID parameter
+    const { error } = clubSchema.sortIdSchema.validate({ id: parseInt(id) });
+    if (error) 
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    
     try {
-        const result = await clubModel.deleteClubDB(id);
-        if (result.rowCount === 0)
-            return res.status(500).send({message: "Nebolo mozne vymazat klub z databazy"});
+        const result = await clubModel.deleteClubDB(parseInt(id));
+        
+        if (result.rowCount === 0) 
+            return res.status(404).json({
+                success: false,
+                message: `Klub s ID ${id} nebol nájdený`
+            });
 
-        return res.status(200).send({message: `Klub s ID: ${result.rows[0].id} bol vymazaný`});
+        return res.status(200).json({
+            success: true,
+            message: `Klub "${result.rows[0].name}" (ID: ${result.rows[0].id}) bol vymazaný`,
+            data: result.rows[0]
+        });
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+        console.error(`🔴 Error in deleteClub: ${e.message}`, e);
+        
+        // Check for foreign key constraint
+        if (e.code === '23503')
+            return res.status(409).json({
+                success: false,
+                message: "Klub nemožno vymazať, pretože existujú záznamy ktoré naň odkazujú."
+            });
+        
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
     }
 };
 
