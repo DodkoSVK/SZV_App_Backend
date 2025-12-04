@@ -13,7 +13,6 @@ const clubQueries = {
         SELECT 
             club.id, 
             club.name,
-            club.type,
             city.name AS city,
             city.id AS city_id,
             club.street, 
@@ -36,7 +35,6 @@ const clubQueries = {
         SELECT 
             club.id, 
             club.name,
-            club.type,
             city.name AS city,
             city.id AS city_id,
             club.street, 
@@ -60,8 +58,8 @@ const clubQueries = {
      */
     insert: `
         INSERT INTO public.club 
-        (name, type, city_id, street, postal, ico, email, phone, chairman_id) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        (name, city_id, street, postal, ico, email, phone, chairman_id) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
         RETURNING id, name
     `,
     
@@ -116,7 +114,6 @@ const clubQueries = {
      */
     fieldMapping: {
         'name': 'name',
-        'type': 'type',
         'city_id': 'city_id',
         'street': 'street',
         'postal': 'postal',
