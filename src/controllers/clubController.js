@@ -17,7 +17,7 @@ const getClub = async (req, res) => {
                 message: error.details[0].message
             });
     }
-
+    
     try {
         const result = await clubModel.selectAllClubs(sortBy);
 

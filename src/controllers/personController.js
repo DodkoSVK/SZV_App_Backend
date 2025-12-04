@@ -1,32 +1,48 @@
 const personModels = require('../models/personModel');
 const personSchema = require('../schemas/personSchema');
 
-//For Test Only
-const mail = require('../../config/mail');
+
 
 /**
- * Backend controller for getting people from the DB with an optional parameter for sorting
- * @param {*} req 
- * @param {*} res 
- * @returns -> Code 200: All data retrieved or the empty DB, Code 500: Database error
- * 0
+ * Get all persons with optional sorting
+ * @route GET /api/club?sortBy=name
  */
 const getPerson = async (req, res) => {
     const { sortBy } = req.query;    
+
+    // Validate sortBy parameter provided
     if(sortBy) {
         const { error } = personSchema.sortPersonSchema.validate({sortBy});
         if (error)
-            return res.status(400).send({ message: error.details[0].message });
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message
+            });
     }
+
     try {
         const result = await personModels.selectPerson(sortBy);
-        if (result.rows.length < 1)
-            return res.status(200).send({ message: "V databáze sa nenachádzajú žiany ľudia."});
 
-        return res.status(200).json(result.rows);
+        // Empty result ist OK - return empty array
+        if (result.rows.length < 1)
+            return res.status(200).json({
+                success: true,
+                message: "V databáze sa nenachádzajú žiadne osoby",
+                data: []
+            });
+
+        return res.status(200).json({
+            success: true,
+            data: result.rows,
+            count: result.rows.length
+        });
+
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+        console.error(`🔴 Error in getPerson: ${e.message}`, e);
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
     }
 };
 const getPersonWithoutClub = async (req, res) => {

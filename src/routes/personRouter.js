@@ -9,17 +9,17 @@ const { authenticateToken, requireToken, requireRole } = require("../middlewares
 /**
  * GET /api/person
  * Get all persons with optional sorting
- * Query params: ?sortBy=
+ * Query params: ?sortBy=name&order=asc
  * Public access
  */
 router.get('/', personController.getPerson);
 
 /**
- * GET /api/person/club
+ * GET /api/person/without-club
  * Get all persons without club
  * Public access
  */
-router.get('/club', personController.getPersonWithoutClub);
+router.get('/without-club', personController.getPersonWithoutClub);
 
 /**
  * GET /api/person/:id
@@ -36,13 +36,7 @@ router.get('/:id', personController.getPersonByID);
  * Create new persons(s)
  * Requires: Authentication + Admin or Moderator role
  * Auth methods: JWT token OR API Key
- * Body: single club object or array of clubs
- * 
- * Example with API Key:
- * Headers: { "X-API-Key": "your_api_key_here" }
- * 
- * Example with JWT:
- * Headers: { "Authorization": "Bearer your_jwt_token" }
+ * Body: single club object or array of persons
  */
 router.post('/', 
     authenticateToken,
@@ -58,7 +52,7 @@ router.post('/',
  */
 router.patch('/:id',
     authenticateToken,
-    equireRole(['admin', 'moderator']),
+    requireRole(['admin', 'moderator']),
     personController.editPerson
 );
 
@@ -70,7 +64,7 @@ router.patch('/:id',
  */
 router.delete('/:id', 
     authenticateToken,
-    equireRole(['admin', 'moderator']),
+    requireRole(['admin']),
     personController.deletePerson
 );
 
