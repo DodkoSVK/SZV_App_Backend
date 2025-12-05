@@ -72,6 +72,7 @@ const getClubById = async (req, res) => {
             success: true,
             data: result.rows[0]
         });
+        
     } catch (e) {
         console.error(`🔴 Error in getClubById: ${e.message}`, e);
         return res.status(500).json({

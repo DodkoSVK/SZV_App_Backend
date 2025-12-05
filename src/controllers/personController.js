@@ -45,85 +45,198 @@ const getPerson = async (req, res) => {
         });
     }
 };
+
+/**
+ * Get all persons without assigned club
+ * @route GET /api/person/without-club
+ */
 const getPersonWithoutClub = async (req, res) => {
     try {
         const result = await personModels.selectPersonWithoutClub();
+
         if (result.rows.length < 1)
-            return res.status(200).send({ message: "V databáze sa nenachádzajú žiany ľudia bez klubu"});
-        return res.status(200).json(result.rows);
+            // Empty result ist OK - return empty array
+            if (result.rows.length < 1)
+                return res.status(200).json({
+                    success: true,
+                    message: "V databáze sa nenachádzajú žiadne osoby",
+                    data: []
+                });
+
+            return res.status(200).json({
+                success: true,
+                data: result.rows,
+                count: result.rows.length
+            });
+
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
+        console.error(`🔴 Error in getPersonWithoutClub: ${e.message}`, e);
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
     }
 }
 
 /**
- * Backend controller for getting people from the DB by their ID
- * @param {*} req 
- * @param {*} res 
- * @returns -> Code 200: All data retrieved or the empty DB, Code 400: Wrong request, Code 500: Database error
+ * Get person by ID
+ * @route GET /api/person/:id
  */
 const getPersonByID = async (req, res) => {
     const { id } = req.params;
-    const { error } = personSchema.sortPersonIdSchema.validate({id});
+
+    // Validate ID parameter
+    const { error } = personSchema.sortPersonIdSchema.validate({id: parseInt(id)});
     if(error)
-        return res.status(400).send({ message: error.details[0].message});
+       return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+
     try {
-        const result = await personModels.selectPersonById(id);
+        const result = await personModels.selectPersonById(parseInt(id));
+        
         if(result.rows.length < 1) 
-            return res.status(200).send({ message: "V databáze sa konkrétny clovek nenachadza" })
-        return res.status(200).json(result.rows);
+            return res.status(404).json({
+                success: false,
+                message: "Osoba nebola nájdená"
+            });
+
+        return res.status(200).json({
+            success: true,
+            data: result.rows[0]
+        });
+        
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});  
+        console.error(`🔴 Error in getPersonByID: ${e.message}`, e);
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
     }
 };
+
 /**
- * Backend controller for creating a new person
- * @param {*} req 
- * @param {*} res 
- * @returns -> Code 200: Person created, Code 400: Wrong request, Code 500: Database error
+ * Create new person
+ * @route POST /api/person
  */
 const createPerson = async (req, res) => {
-    const { error } = personSchema.createPersonSchema.validate( req.body );
-    if(error)
-        return res.status(400).send({ message: error.details[0].message});
+    let persons = req.body;
 
-    const { fname, sname, birth, club_id, email, phone } = req.body;
+    // Convert single object to array for uniform processing
+    if(!Array.isArray(persons))
+        persons = [persons];
 
-    let clubIdToInsert = club_id;
-    if (club_id === 0) {
-        clubIdToInsert = null;
+    // Validate all persons before inserting any
+    for (let i = 0; i < persons.lenght; i++) {
+        const { error } = personSchema.createPersonSchema.validate(persons[i]);
+        if (error)
+            return res.status(400).json({
+                success: false,
+                message: `Chyba v zázname osoby na pozícii ${i + 1}: ${error.details[0].message}`
+            });
+        
+        // Convert club_id = 0 to null for each person
+        if (persons[i].club_id === 0) 
+            persons[i].club_id = null;
     }
-    try {
-        const result = await personModels.insertPerson(fname, sname, birth, clubIdToInsert, email, phone)    
-        if(result.rowCount < 1) 
-            return res.status(200).send({ message: "Nebolo možné zapísať osobu do databázy"});
 
-        return res.status(201).send({ message: "Uživateľ bol úspešne vytvorený v databáze."});
+    try {
+        const insertedPersons = await personModels.insertPersonBulk(persons);
+
+        return res.status(201).json({
+            success: true,
+            message: `Vytvorených ${insertedPersons.length} osôb`,
+            data: insertedPersons
+        });
     } catch (e) {
-        console.log(`🟠 We got a problem: ${e}`);
-        return res.status(500).send({message: "Neocakavana chyba na strane databazy."});
-    }    
+        console.error(`🔴 Error in createPerson: ${e.message}`, e);
+
+        // Check for specific database errors
+        if (e.code === '23505') { // Unique violation
+            // Zisti ktorý constraint zlyhal
+            if (e.constraint === 'person_email_key') 
+                return res.status(409).json({
+                    success: false,
+                    message: "Osoba s týmto emailom už existuje."
+                });
+            
+            if (e.constraint === 'person_phone_key') 
+                return res.status(409).json({
+                    success: false,
+                    message: "Osoba s týmto telefónnym číslom už existuje."
+                });
+            
+            return res.status(409).json({
+                success: false,
+                message: "Osoba s týmito údajmi už existuje."
+            });
+        }
+        if (e.code === '23503') // Foreign key violation
+            return res.status(400).json({
+                success: false,
+                message: "Neplatné ID klubu."
+            });
+
+        return res.status(500).json({
+            success: false,
+            message: "Neočakávaná chyba na strane databázy."
+        });
+    }
 };
 /**
- * Backend controller for editing a person
- * @param {*} req 
- * @param {*} res 
- * @returns Code 200: Person updated, Code 400: Wrong request, Code 500: Database error
+ * Update existing person by ID
+ * @route PATCH /api/person/:id
  */
 const editPerson = async (req, res) => {
+    const { id } = req.params;
+
+    // Validate ID parameter
+    const { error: idError } = personSchema.personIdSchema.validate({ id: parseInt(id) });
+    if (idError)
+        return res.status(400).json({
+            success: false,
+            message: idError.details[0].message
+        });
+
+    // Validate request body
+    const { error } = personSchema.updatePersonSchema.validate(req.body);
+    if (error)
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+
+    // Check if there is anything to update
+    const allowedFields = ['fname', 'sname', 'birth', 'club_id', 'email', 'phone'];
+    let fieldsToUpdate = {};
+
+    allowedFields.forEach(field => {
+        if(req.body[field] !== undefined) {
+            // Special handling for club_id: convert 0 to null
+            if (field === 'club_id' && req.body[field] === 0)
+                fieldsToUpdate[field] = null;
+            else
+                fieldsToUpdate[field] = req.body[field];
+        }
+    });
+
+    if(Object.keys(fieldsToUpdate).length === 0)
+        return res.status(400).json({
+            success: false,
+            message: "Neboli poskytnuté žiadne polia na aktualizáciu"
+        });
+
+
+
     console.log("validating payload", req.body);
     console.log("updatePersonSchema", personSchema.updatePersonSchema.describe());
 
 
-    const { error } = personSchema.updatePersonSchema.validate(req.body);
     if(error) 
         return res.status(400).send({ message: error.details[0].message});    
-    const { id } = req.params;
     const { fname, sname, birth, club_id, email, phone } = req.body;
 
-    let fieldsToUpdate = {};
     let fieldsToUpdate2 = {};
     if (fname) fieldsToUpdate.fname = fname;
     if (sname) fieldsToUpdate.sname = sname;
